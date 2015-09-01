@@ -5,8 +5,8 @@ Primary style
 -------------------------------- */
 html, body{
     //background:radial-gradient(#77d19e,#46c17b);
-    background: -webkit-linear-gradient(90deg, #8e9eab 10%, #eef2f3 90%); /* Chrome 10+, Saf5.1+ */
-
+   // background: -webkit-linear-gradient(90deg, #8e9eab 10%, #eef2f3 90%); /* Chrome 10+, Saf5.1+ */
+background: -webkit-linear-gradient(90deg, #606c88 10%, #3f4c6b 90%); /* Chrome 10+, Saf5.1+ */
     margin: 0;
     height: 100%;
     font-family: 'Open Sans', sans-serif;
@@ -14,24 +14,14 @@ html, body{
 }
 
 ::-webkit-scrollbar {
-      width: 15px;
+    width: 15px;
 } /* this targets the default scrollbar (compulsory) */
 
-::-webkit-scrollbar-track {
-      //background-color: #b46868;
-} /* the new scrollbar will have a flat appearance with the set background color */
- 
 ::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.2); 
+    background-color: rgba(0, 0, 0, 0.2); 
 } /* this will style the thumb, ignoring the track */
- 
-::-webkit-scrollbar-button {
-     // background-color: #7c2929;
-} /* optionally, you can style the top and the bottom buttons (left and right for horizontal bars) */
- 
-::-webkit-scrollbar-corner {
-      background-color: black;
-} /* if both the vertical and the horizontal bars appear, then perhaps the right bottom corner also needs to be styled */
+
+
 
 
 .wrapper {
@@ -45,16 +35,16 @@ html, body{
 .main-content{
     -webkit-user-select: none;
     height:100%;
-
     overflow: scroll;
     padding:30px;
-overflow-x: hidden;
+    padding-top: 10px;
+    overflow-x: hidden;
+    margin:0px;
 }
 
 
 .data-content
 {
-
     position:relative;       
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
@@ -89,47 +79,132 @@ overflow-x: hidden;
     transform:skew(8deg) rotate(3deg);
 }
 
+/*****************************************************************************/
 
-.messages-content{
-    -webkit-box-shadow: 0 10px 6px -6px #777;
-    -moz-box-shadow: 0 10px 6px -6px #777;
-    box-shadow: 0 10px 6px -6px #000;
-    -webkit-user-select: none;
+
+.log-content
+{
+    position:relative;       
+    -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    height:180px;
+    width:100%;
+    background: #ffffff;
+}
+.log-content:before, .log-content:after
+{
+    content:"";
+    position:absolute; 
+    z-index:-1;
+    -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    -moz-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    box-shadow:0 0 20px rgba(0,0,0,0.8);
+    top:50%;
+    bottom:0;
+    left:10px;
+    right:10px;
+    -moz-border-radius:100px / 10px;
+    border-radius:100px / 10px;
+} 
+.log-content:after
+{
+    right:10px; 
+    left:auto;
+    -webkit-transform:skew(8deg) rotate(3deg); 
+    -moz-transform:skew(8deg) rotate(3deg);     
+    -ms-transform:skew(8deg) rotate(3deg);     
+    -o-transform:skew(8deg) rotate(3deg); 
+    transform:skew(8deg) rotate(3deg);
+}
+
+/*****************************************************************************/
+
+.query-content
+{
+    position:relative;       
+    -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     height:180px;
     width:100%;
     background: #ffffff;
 }
 
-.query-content{
-    -webkit-box-shadow: 0 10px 6px -6px #777;
-    -moz-box-shadow: 0 10px 6px -6px #777;
-    box-shadow: 0 10px 6px -6px #000;
-    -webkit-user-select: none;
-    height:180px;
-    width:100%;
-    background: #ffffff;
 
+.query-content:before, .query-content:after
+{
+    content:"";
+    position:absolute; 
+    z-index:-1;
+    -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    -moz-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    box-shadow:0 0 20px rgba(0,0,0,0.8);
+    top:50%;
+    bottom:0;
+    left:10px;
+    right:10px;
+    -moz-border-radius:100px / 10px;
+    border-radius:100px / 10px;
+} 
+.query-content:after
+{
+    right:10px; 
+    left:auto;
+    -webkit-transform:skew(8deg) rotate(3deg); 
+    -moz-transform:skew(8deg) rotate(3deg);     
+    -ms-transform:skew(8deg) rotate(3deg);     
+    -o-transform:skew(8deg) rotate(3deg); 
+    transform:skew(8deg) rotate(3deg);
 }
 
 
+.query-content-toolbar{
+    background: rgba(184, 184, 184, .5);
+    float: right;
+    height: 100%;
+    position: relative;
+    color:#FFFFFF;
+    z-index: 1000;
+    padding:3px
+}
+
+.data-content-toolbar{
+    float: right;
+    position: relative;
+    color:#FFFFFF;
+    z-index: 1000;
+    padding:3px
+}
+
+.log-content-toolbar{
+    background: rgba(184, 184, 184, .5);
+    float: right;
+    height: 100%;
+    position: relative;
+    color:#FFFFFF;
+    z-index: 1000;
+    padding:3px
+}
 
 
-
-.sidebar{
+.side-bar{
 
     border-bottom: 1px solid;
     border-bottom-color: #ccc;
     border-bottom-color: rgba(255, 255, 255, 0.2);
     background-color: rgba(255, 255, 255, 0.2);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-
     float:left;
     height:100%;
     width:18%;  
     overflow: hidden;
     display:block;
     padding:30px;
-
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
 
     //box-shadow: 0 0 10px #000;
     -webkit-user-select: none;
@@ -145,7 +220,7 @@ overflow-x: hidden;
     background: #ffffff;
     padding: 1px;
     position: relative;
-    height:284px;
+    height:300px;
 }
 .side-box:before, .side-box:after
 {
@@ -173,7 +248,23 @@ overflow-x: hidden;
     transform:skew(8deg) rotate(3deg);
 }  
 
-.vertical-separator{
+.vertical-separator-content{
     -webkit-user-select: none;
     height: 5%;
 }
+
+.vertical-separator-sidebar{
+    -webkit-user-select: none;
+    height: 5%;
+}
+
+#split-bar {
+
+    height:100%;
+    float: left;
+    width: 6px;
+    cursor: col-resize;
+    background-color: black;
+    opacity: 0.1;
+}
+
