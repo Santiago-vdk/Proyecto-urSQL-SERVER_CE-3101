@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package thread.management;
+package urSQL.threads;
 
 import java.util.concurrent.Callable;
 
@@ -18,7 +18,7 @@ public class SystemCatalog implements Callable{
     public String call() throws InterruptedException {
 
        
-        System.out.println("HUbo get");
+        System.out.println("Entre a System Catalog");
         
         
         return local + "pase por el catalog";

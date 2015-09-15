@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package thread.management;
+package urSQL.threads;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 
 /**
@@ -14,28 +15,49 @@ import java.util.concurrent.Future;
  * @author Shagy
  */
 public class RuntimeDBProcessor implements Callable {
-    private String local_query = "";
-    SystemCatalog catalog = new SystemCatalog();
+    private String _Local_Query = "";
+    SystemCatalog _Catalog;
+    StoredDataManager _DataM;
+    FutureTask futureCatalog;
+    FutureTask futureDataM;
+            
+    RuntimeDBProcessor(){
+        _Catalog = new SystemCatalog();
+        _DataM= new StoredDataManager();
+        futureCatalog = new FutureTask(_Catalog);
+        futureDataM = new FutureTask(_DataM);
+    }
 
     @Override
     public String call() throws Exception {
-        System.out.println("HUbo get");
-        Future futureCatalog = ThreadManager.pool.submit(catalog);
+        System.out.println("Entre a RDBM");
+        sendQuery();
         
-        catalog.sendQuery(local_query);
- 
-        return futureCatalog.get() + "Pase por el runtimedatabaseprocessor";
+        return "hola";
     }
     
  
     
-    public void sendQuery(String query) {
-        
-        
-        local_query = query;
-        
+    public void sendQuery() {
+        ThreadManager._Pool.execute(futureCatalog);
+        waitCatalog();
+        ThreadManager._Pool.execute(futureDataM);
+        waitDataM();
     }
-
+    
+    public void setQuery(String pQuery){
+       _Local_Query=pQuery;
+    }
+    public void waitCatalog(){
+        while(futureCatalog.isDone()){
+            
+        }
+    }
+    public void waitDataM(){
+        while(futureDataM.isDone()){
+            
+        }
+    }
     
     
     
