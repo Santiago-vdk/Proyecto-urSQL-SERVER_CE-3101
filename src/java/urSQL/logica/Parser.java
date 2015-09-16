@@ -10,7 +10,6 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import urSQL.parser.*;
 
-
 /**
  *
  * @author Shagy
