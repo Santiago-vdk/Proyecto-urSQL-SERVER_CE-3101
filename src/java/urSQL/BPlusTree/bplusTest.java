@@ -76,6 +76,7 @@ import NET.sourceforge.BplusJ.BplusJ.*;
 				(new java.io.File(myBlocksFileName)).delete(); 
 			}
 			BplusTree myTree = hBplusTree.Initialize(myTreeFileName, myBlocksFileName, 6);
+                        
 			for (int i=0; i<10; i++) 
 			{
 				
