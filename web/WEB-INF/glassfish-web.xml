@@ -8,4 +8,10 @@
       <description>Keep a copy of the generated servlet class' java code.</description>
     </property>
   </jsp-config>
+  <session-config>
+    <cookie-properties>
+      <b><property name="cookieName" value="WEBAPP_SESSION"/></b>
+      <b><property name="cookieHttpOnly" value="false"/></b>
+    </cookie-properties>
+  </session-config>
 </glassfish-web-app>

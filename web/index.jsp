@@ -4,6 +4,7 @@
     Author     : Shagy
 --%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -52,6 +53,10 @@
         <link rel="stylesheet" href="css/style.min.css" />
         <script src="js/jstree.min.js"></script>
         <script src="js/webapp/webapp-tree.js"></script> 
+
+
+
+
     </head>
     <body>
         <div class="wrapper">
@@ -126,7 +131,7 @@
 
                     </div>
                     <script>
-                        
+
 
                     </script>
 
@@ -135,6 +140,16 @@
             </div>
         </div>
 
+        <script>
+            function getCookie(name) {
+                var value = "; " + document.cookie;
+                var parts = value.split("; " + name + "=");
+                if (parts.length == 2)
+                    return parts.pop().split(";").shift();
+            }
+            
+            
+        </script>
 
     </body>
 </html>

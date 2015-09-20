@@ -5,10 +5,11 @@
  */
 package urSQL.BPlusTree;
 
+import NET.sourceforge.BplusJ.BplusJ.BplusTree;
+import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
-
 /**
  *
  * @author David
@@ -17,7 +18,7 @@ public class main {
     public static void main(String [] args)
 	{
         try {
-            
+           
             BplusTree myTree = hBplusTree.Initialize("c:\\tmp/prueba.dat", "c:\\tmp/data.dat", 6);
             myTree.Set("a", "Hola");
             myTree.Set("b", "heloo");

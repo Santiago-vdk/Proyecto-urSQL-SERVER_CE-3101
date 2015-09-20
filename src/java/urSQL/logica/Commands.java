@@ -5,8 +5,8 @@
  */
 package urSQL.logica;
 
-import urSQL.BPlusTree.BplusTree;
-import urSQL.BPlusTree.hBplusTree;
+import NET.sourceforge.BplusJ.BplusJ.BplusTree;
+import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
 
 /**
  *
