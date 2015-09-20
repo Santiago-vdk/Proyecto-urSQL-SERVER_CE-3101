@@ -5,20 +5,15 @@
  */
 package urSQL.servicios;
 
-import javax.json.JsonArray;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import urSQL.logica.Parser;
 
 
 /**
@@ -37,66 +32,24 @@ public class WebAppResource  {
      */
     public WebAppResource() {
     }
-
-    /**
-     * Retrieves representation of an instance of urSQL.servicios.WebAppResource
-     * @return an instance of java.lang.String
-     */
-    @GET
-    @Produces("application/xml")
-    public String getXml() {
-        //TODO return proper representation object
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * PUT method for updating or creating an instance of WebAppResource
-     * @param content representation for the resource
-     * @return an HTTP response with content of the updated or created resource.
-     */
-    @PUT
-    @Consumes("application/xml")
-    public void putXml(String content) {
-    }
-    
-    
-    @GET
-    @Path("/data/QueryStatus")
-    @Produces("application/json")
-    public String getQueryStatus(){
-        return "{status:success/fail,time:timestamp,action:accionejecutada,message:error/rowsreturned,duration:duration}";
-        
-    }
-    
-    @GET
-    @Path("/data/query.json")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JSONArray getStatus() throws JSONException{
-    JSONObject jo = new JSONObject();
-    jo.put("id", 0);
-    jo.put("name", "Santi");
-    
-
-    JSONArray ja = new JSONArray();
-    ja.put(jo);
-        
-    return ja;
-        
-        //return "{status:success/fail,time:timestamp,action:accionejecutada,message:error/rowsreturned,duration:duration}";
-        
-    }
     
     @POST
-    @Path("/Query")
+    @Path("/ExecuteQuery")
     @Produces("application/json")
     @Consumes("application/json")
-    public String postQuery(String msg){
-        Parser parser = new Parser();
-      //  parser.parseQuery(msg);
-        return "{status:200}";
+    public String postQuery(String msg) throws JSONException{
+        System.out.println(msg);
+        JSONObject obj = new JSONObject();
+        obj.put("data", "daca");
+        return obj.toString();
     }
     
     
-    
-    
+    @GET
+    @Path("/data/queryLog")
+    @Produces("application/json")
+    public String queryLog(String msg){
+        return null;
+    }
+   
 }

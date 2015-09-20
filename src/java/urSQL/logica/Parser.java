@@ -4,10 +4,12 @@
  * and open the template in the editor.
  */
 package urSQL.logica;
+import java.util.List;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Token;
 import urSQL.parser.*;
 
 /**
@@ -25,8 +27,10 @@ public class Parser extends SQLiteBaseListener{
     public boolean processQuery(String pSource){
         CharStream in = new ANTLRInputStream(pSource);
         SQLiteLexer lexer = new SQLiteLexer(in);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);        
         SQLiteParser parser = new SQLiteParser(tokens);
+
+        
         if (parser.parse().isEmpty()){
             return true;
         }
@@ -34,19 +38,15 @@ public class Parser extends SQLiteBaseListener{
             return false;
         }
     }
-    
-    
-    
-    public static void main(String [] args)
-	{
-        String source = "CREATE TABLE table_name" +
-"(" +
-"column_name1 int(4)," +
-"column_name2 int()"+
-                ");";
+
+    public static void main(String[] args) {
+        String source = "SELECT EmployeeID, FirstName, LastName, HireDate, City "
+                + "FROM Employees\n" 
+                + "WHERE City <> 'London'";
+
+        Parser p = new Parser();
         
-        Parser p= new Parser();
         System.out.println(p.processQuery(source));
     }
-    
+
 }
