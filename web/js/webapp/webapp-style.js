@@ -20,7 +20,6 @@ $(document).ready(function () {
         //var toggleHeight = $(this).height === 260 ? "180px" : "260px";
         $('.side-bar').animate({width: 250}, 600);
         if ($('.main').margin !== "0px") {
-
             $('.main').animate({marginLeft: '0px'}, 600);
         }
     });
@@ -63,7 +62,7 @@ $(document).ready(function () {
 
 
     //Button Behavior
-    $('#run-query').popover({container: 'body'});
+    $('#execute-query').popover({container: 'body'});
     $('#executing-query').popover({container: 'body'});
     $('#plan-log').popover({container: 'body'});
 

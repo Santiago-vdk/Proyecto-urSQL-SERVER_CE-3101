@@ -4,9 +4,11 @@
     Author     : Shagy
 --%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-
+<%@page session="false"%>
 <!DOCTYPE html>
+
 <html>
+    
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>urSQL • WebApp</title>
@@ -23,7 +25,10 @@
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css" rel="stylesheet">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
         <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-
+        
+        <!-- Sessions -->
+        <script src="js/webapp/session.js"></script>
+        
         <!-- CodeMirror -->
         <script src="js/codemirror.js"></script>
         <link rel="stylesheet" href="css/codemirror.css">
@@ -54,14 +59,17 @@
         <script src="js/jstree.min.js"></script>
         <script src="js/webapp/webapp-tree.js"></script> 
 
+        <!-- Tourist -->
+        <script src="js/tourist.js"></script>
+        <link rel="stylesheet" href="css/tourist.css" type="text/css" media="screen">
 
-
+        <script src="js/webapp/DataIO.js"></script>
 
     </head>
     <body>
-        <div class="wrapper">
+        <div class="wrapper" id="wrapper">
             <div class="side-bar" id="sidebar">
-                <div class="side-box">
+                <div class="side-box" id="sidebox">
                     <a href="#" class="button button-action" style="width:100%;">START <i class="fa fa-play"></i></a>
                     <hr class="hr"></hr>              
                     <a href="#" class="button button-caution" style="width:100%;">STOP <i class="fa fa-stop"></i></i></a>
@@ -76,7 +84,7 @@
                     <hr class="hr"></hr>   
                     <a href="#" class="button button-normal" style="width:100%;">DISPLAY DB <i class="fa fa-desktop"></i></a>
                 </div>
-                <div class="vertical-separator-sidebar"></div>
+                <div class="vertical-separator-sidebar" id="side-horizontal-separator"></div>
                 <div class="side-box" id="tree-box">
                     <div id="jstree">
 
@@ -101,13 +109,13 @@
                     <div class="query-content-toolbar">
                         <button class="btn btn-sq-lg btn-primary" id="expand-query"><i id="button-down-query" class="fa fa-caret-down "></i></button>
                         <hr class="hr"></hr>   
-                        <button class="btn btn-sq-lg btn-success" id="run-query"  data-content="Run Query!" rel="popover" data-placement="left" data-trigger="hover"><i class="fa fa-check "></i></button>
-                        <hr class="hr"></hr>   
-                        <button class="btn btn-sq-lg btn-warning" id="executing-query" data-content="Executing Query!" rel="popover" data-placement="left" data-trigger="hover"><i class="fa fa-cog fa-spin "></i></button>
+                        <button class="btn btn-sq-lg btn-success" id="execute-query"  data-content="Run Query!" rel="popover" data-placement="left" data-trigger="hover"><i class="fa fa-check" id="execute-query-icon"></i></button>
+                       <!-- <hr class="hr"></hr>   
+                        <button class="btn btn-sq-lg btn-warning" id="executing-query" data-content="Executing Query!" rel="popover" data-placement="left" data-trigger="hover" hidden><i class="fa fa-cog fa-spin"></i></button> -->
                     </div>
 
                 </div>
-                <div class="vertical-separator-content"></div>
+                <div class="vertical-separator-content" id="main-horizontal-separator"></div>
                 <div class="data-content" id="data" style="overflow: auto; height: 100%;">
 
                     <div class="data-content-toolbar">
@@ -121,7 +129,6 @@
                 <div class="vertical-separator-content"></div>
                 <div class="log-content" id="log" >
 
-
                     <div class="log-content-toolbar">
                         <button class="btn btn-sq-lg btn-primary" id="expand-log"><i id="button-down-log" class="fa fa-caret-down"></i></button>
                         <hr class="hr"></hr>   
@@ -130,45 +137,8 @@
                         <button class="btn btn-sq-lg btn-danger"><i class="fa fa-eraser"></i></button>
 
                     </div>
-                    <script>
-
-
-                    </script>
-
                 </div>
-
             </div>
         </div>
-
-        <script>
-            function getCookie(name) {
-                var value = "; " + document.cookie;
-                var parts = value.split("; " + name + "=");
-                if (parts.length == 2)
-                    return parts.pop().split(";").shift();
-            }
-            
-            
-        </script>
-
     </body>
 </html>
-
-
-<!--
-$('#run-query').click(function () {
-                $.ajax({
-                    url: '/webresources/webapp/Query',
-                    dataType: 'json',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(editor.getValue()),
-                    success: function (data, textStatus, jQxhr) {
-                        alert("Nice");
-                    },
-                    error: function (jqXhr, textStatus, errorThrown) {
-                        console.log(errorThrown);
-                    }
-                });
-            });
--->
