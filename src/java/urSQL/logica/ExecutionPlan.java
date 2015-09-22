@@ -24,6 +24,74 @@ public class ExecutionPlan {
         }
         return -1;
     }
+    
+    private void checkSetStatement(int pi,int pj,String pTabla){
+        int i=pi;
+        String columna="";
+        String value="";
+        while(i<pj){
+            columna=_Querry[i];
+            //validar que existe la columna
+            i+=2;
+            value=_Querry[i];
+            //validar el tipo
+            i+=2;//para saltar la coma
+        }
+    }
+    
+    private void checkWhereStatement(int pi,int pj,String pTabla){
+        int i=pi;
+        int estado=0;
+        String columna="";
+        String operador="";
+        _Plan+="WHERE ";
+        while(i<pj){
+            if(estado==0){//estado inicial,inicio de where statement
+                String token = _Querry[i];
+                _Plan+=token;
+                if(token.compareTo("(")!=0 && token.compareTo(")")!=0
+                        && token.toUpperCase().compareTo("AND")!=0 
+                        && token.toUpperCase().compareTo("OR")!=0){
+                    //ignora los parantesis y los operadores and y or
+                    columna=token;
+                    //validar que exista la columna en pTabla
+                    estado=1;
+                } 
+            }
+            else if(estado==1){//estado para el compare operator   >, <, =, like, not, is null, is not null
+                String token = _Querry[i];
+                _Plan+=token;
+                operador=token;
+                
+                if(token.toLowerCase().compareTo("is")==0){
+                    i++;
+                    token = _Querry[i];
+                    _Plan+=token;
+                    operador+=token;
+                    if(token.toLowerCase().compareTo("not")==0){
+                        i++;
+                        token = _Querry[i];
+                        _Plan+=token;
+                        operador+=token;
+                    }
+                }
+                estado=2;
+            }
+            else{//estado para value
+                if(operador.toLowerCase().compareTo("is null")!=0 && 
+                        operador.toLowerCase().compareTo("is not null")!=0){//para esos casos no hay value
+                    //validar el tipo de la columna
+                    String token = _Querry[i];//value
+                    _Plan+=token;
+                }
+                else{
+                    i--;//para compensar la falta del token de value
+                }
+            }
+            estado=0;
+            i++;
+        }
+    }
     //**************************************************************************
     
     
@@ -119,6 +187,26 @@ public class ExecutionPlan {
             //validar que existe la tabla en el catalogo
             _Plan += "OPEN_TABLE "+tabla+" READ\n";
             indice++;
+            if(findInQuerry("WHERE")!=-1){//select con where
+                int indice2;
+                if(findInQuerry("GROUP")!=-1){
+                    indice2=findInQuerry("GROUP");
+                }
+                else if(findInQuerry("FOR")!=-1){
+                    indice2=findInQuerry("FOR");
+                }
+                else{
+                    indice2=_Querry.length;
+                }
+                checkWhereStatement(indice,indice2,tabla);
+            }
+            if(findInQuerry("GROUP")!=-1){//select con group by
+                //validar que existan las columnas
+            }
+            if(findInQuerry("FOR")!=-1){//select con group by
+                //?
+            }
+            
             
         } 
         
@@ -129,10 +217,16 @@ public class ExecutionPlan {
         String tabla = _Querry[indice];
         //validar que existe la tabla
         _Plan += "OPEN_TABLE "+tabla+" WRITE\n";
+        indice++;
         
-        //VALIDAR SET
-        
-        //VALIDAR WHERE
+        if(findInQuerry("WHERE")!=-1){//select con where
+                int indice2=_Querry.length;
+                checkSetStatement(indice,findInQuerry("WHERE"),tabla);
+                checkWhereStatement(indice,indice2,tabla);
+            }
+        else{//select sin where
+            checkSetStatement(indice,_Querry.length,tabla);
+        }
     }  
     
     private void createPlan_Delete(){
@@ -141,7 +235,10 @@ public class ExecutionPlan {
         //validar que exista la tabla
         _Plan +="OPEN_TABLE "+tabla+" WRITE\n";
         
-        //VALIDAR WHERE
+        if(findInQuerry("WHERE")!=-1){//select con where
+                int indice2=_Querry.length;
+                checkWhereStatement(indice,indice2,tabla);
+            }
     }   
     
     private void createPlan_Insert(){
@@ -171,7 +268,7 @@ public class ExecutionPlan {
     
     public void createPlan(String pQuerry){
         
-        String[] _Querry = pQuerry.split(" ");
+        _Querry = pQuerry.split(" ");
         String comando = _Querry[0].toUpperCase();
         String comando2 = _Querry[1].toUpperCase();
         
@@ -230,6 +327,8 @@ public class ExecutionPlan {
                 createPlan_Drop_Table();
             }
         }
+        
+        //guardar la variable _Plan en un archivo
         
     
     }
