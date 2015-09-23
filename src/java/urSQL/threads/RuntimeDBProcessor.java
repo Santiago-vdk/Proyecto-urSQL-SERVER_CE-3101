@@ -36,8 +36,9 @@ public class RuntimeDBProcessor implements Callable {
         return "hola";
     }
     
- 
-    
+    /**
+     *
+     */
     public void sendQuery() {
         ThreadManager._Pool.execute(futureCatalog);
         waitCatalog();
@@ -45,14 +46,26 @@ public class RuntimeDBProcessor implements Callable {
         waitDataM();
     }
     
+    /**
+     *
+     * @param pQuery
+     */
     public void setQuery(String pQuery){
        _Local_Query=pQuery;
     }
+
+    /**
+     *
+     */
     public void waitCatalog(){
         while(futureCatalog.isDone()){
             
         }
     }
+
+    /**
+     *
+     */
     public void waitDataM(){
         while(futureDataM.isDone()){
             

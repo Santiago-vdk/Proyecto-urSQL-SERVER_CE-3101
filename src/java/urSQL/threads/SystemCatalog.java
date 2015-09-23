@@ -24,7 +24,10 @@ public class SystemCatalog implements Callable{
         return local + "pase por el catalog";
     }
     
-
+    /**
+     *
+     * @param local_query
+     */
     public void sendQuery(String local_query) {
         local = local_query;
     }

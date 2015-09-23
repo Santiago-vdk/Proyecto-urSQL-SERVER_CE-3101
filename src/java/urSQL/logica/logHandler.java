@@ -28,14 +28,34 @@ public class logHandler {
     }
 
     /* Static 'instance' method */
+
+    /**
+     *
+     * @return
+     */
+    
     public static logHandler getInstance() {
         return _singleton;
     }
 
+    /**
+     *
+     * @param pPath
+     */
     public void createLog(String pPath){
 
     }
 
+    /**
+     *
+     * @param pPath
+     * @param pError
+     * @param pAction
+     * @param pStatus
+     * @param pDuration
+     * @throws IOException
+     * @throws JSONException
+     */
     public void logEvent(String pPath, boolean pError , String pAction, String pStatus, String pDuration ) throws IOException, JSONException {
         String path = pPath.substring(0, pPath.indexOf("build"));
         File fileDir = new File(path + "log.txt");
@@ -45,6 +65,12 @@ public class logHandler {
         out.close();
     }
 
+    /**
+     *
+     * @param pPath
+     * @return
+     * @throws JSONException
+     */
     public String getLastEventJSON(String pPath) throws JSONException {
         String path = pPath.substring(0, pPath.indexOf("build"));
         File fileDir = new File(path + "log.txt");
@@ -65,6 +91,11 @@ public class logHandler {
         return object.toString();
     }
     
+    /**
+     *
+     * @param file
+     * @return
+     */
     public String tail( File file ) {
     RandomAccessFile fileHandler = null;
     try {

@@ -34,7 +34,9 @@ public class StoredDataManager implements Callable{
         return Data;
     }
     
-   
+    /**
+     *
+     */
     public void waitSD(){
         while(_FutureStoredData.isDone()){
             

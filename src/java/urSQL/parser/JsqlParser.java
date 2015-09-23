@@ -17,7 +17,11 @@ public class JsqlParser {
    
     ExecutionPlan executionPlan = new ExecutionPlan();
    
-   
+    /**
+     *
+     * @param pQuerry
+     * @return
+     */
     public boolean Parse(String pQuerry){
     try{
             net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuerry);
@@ -50,6 +54,10 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         }
     }
    
+    /**
+     *
+     * @param args
+     */
     public static void main(String [] args)
         {
             JsqlParser parser = new JsqlParser();

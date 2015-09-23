@@ -14,11 +14,23 @@ import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
  */
 public class Commands {
     
+    /**
+     *
+     * @param name
+     * @param schema
+     * @throws Exception
+     */
     public void create_Table(String name,String schema) throws Exception{
         BplusTree myTree = hBplusTree.Initialize("c:\\tmp/DataBases/"+schema+"/Tables/"+name+".tree",
                 "c:\\tmp/DataBases/"+schema+"/Tables/"+name+".table", 6);
         
     }
+
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String [] args) throws Exception
 	{
             Commands C= new Commands();

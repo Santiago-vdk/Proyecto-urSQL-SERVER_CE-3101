@@ -319,6 +319,11 @@ public class ExecutionPlan {
    
     //Funcion de entrada
    
+    /**
+     *
+     * @param pQuerry
+     */
+       
     public void createPlan(String pQuerry){
         System.out.println(pQuerry);
         String tmp = AddSpaces(pQuerry);

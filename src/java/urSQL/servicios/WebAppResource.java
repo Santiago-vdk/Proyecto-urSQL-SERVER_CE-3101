@@ -41,6 +41,14 @@ public class WebAppResource {
     public WebAppResource() {
     }
 
+    /**
+     *
+     * @param msg
+     * @return
+     * @throws JSONException
+     * @throws InterruptedException
+     * @throws IOException
+     */
     @POST
     @Path("/ExecuteQuery")
     @Produces("application/json")
@@ -67,6 +75,12 @@ public class WebAppResource {
         return obj.toString();
     }
 
+    /**
+     *
+     * @param msg
+     * @return
+     * @throws JSONException
+     */
     @GET
     @Path("/data/log")
     @Produces("application/json")

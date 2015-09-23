@@ -16,12 +16,19 @@ public class Table {
     private List<List> _Values= new ArrayList<List>();
     private List<String> _Columns=new ArrayList<String>();
     
-   public void add(List<String> pList){
+    /**
+     *
+     * @param pList
+     */
+    public void add(List<String> pList){
        _Values.add(pList);
        
    } 
    
-   public void printTable(){
+    /**
+     *
+     */
+    public void printTable(){
        for(int i=0; i>_Values.size(); i++){
            for(int j=0; j>_Values.get(0).size(); j++){
               System.out.print(_Values.get(i).get(j)+"  "); 
