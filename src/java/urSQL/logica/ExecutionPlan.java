@@ -27,7 +27,7 @@ public class ExecutionPlan {
    
    
    
-    private String AddSpaces(String pQuerry){
+    private String adjustQuerry(String pQuerry){
         String tmp =pQuerry;
         boolean fin=false;
         int i=0;
@@ -56,7 +56,7 @@ public class ExecutionPlan {
         }
         int comilla=0;
         i=0;
-        while(comilla!=-1){
+        while(comilla!=-1){//elimina comillas innecesarias en los valores
             comilla = tmp.indexOf("'",i);
             if(comilla!=-1){
                 tmp = tmp.substring(0, comilla)+tmp.substring(comilla+1);
@@ -326,7 +326,7 @@ public class ExecutionPlan {
        
     public void createPlan(String pQuerry){
         System.out.println(pQuerry);
-        String tmp = AddSpaces(pQuerry);
+        String tmp = adjustQuerry(pQuerry);
         _Querry = tmp.split(" ");
         System.out.println(tmp);
        /* String comando = _Querry[0].toUpperCase();
