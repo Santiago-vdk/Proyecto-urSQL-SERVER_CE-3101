@@ -4,16 +4,16 @@
  * and open the template in the editor.
  */
 package urSQL.logica;
-
+ 
 /**
  *
  * @author RafaelAngel
  */
 public class ExecutionPlan {
-    
+   
     private String[] _Querry;
-    private String _Plan=""; 
-    
+    private String _Plan="";
+   
     //funciones auxiliares
     //**************************************************************************
     private int findInQuerry(String pString){
@@ -24,7 +24,51 @@ public class ExecutionPlan {
         }
         return -1;
     }
-    
+   
+   
+   
+    private String AddSpaces(String pQuerry){
+        String tmp =pQuerry;
+        boolean fin=false;
+        int i=0;
+        while(!fin){//agrega espacios en comas y parentesis
+            int coma = tmp.indexOf(",",i);
+            int parentesisIzq = tmp.indexOf("(",i);
+            int parentesisDer = tmp.indexOf(")",i);
+            if(coma==-1 && parentesisIzq ==-1 && parentesisDer ==-1){
+                fin = true;
+            }
+            else{
+                if(coma!=-1){
+                    i=coma+2;
+                    tmp = tmp.substring(0, coma)+" ,"+tmp.substring(coma+1);
+                }
+                else if(parentesisIzq!=-1){
+                    i=parentesisIzq+2;
+                    tmp = tmp.substring(0, parentesisIzq)+"( "+tmp.substring(parentesisIzq+1);
+ 
+                }
+                else if(parentesisDer!=-1){
+                     i=parentesisDer+22;
+                    tmp = tmp.substring(0, parentesisDer)+" "+tmp.substring(parentesisDer);
+                }
+            }
+        }
+        int comilla=0;
+        i=0;
+        while(comilla!=-1){
+            comilla = tmp.indexOf("'",i);
+            if(comilla!=-1){
+                tmp = tmp.substring(0, comilla)+tmp.substring(comilla+1);
+                i=comilla;
+            }
+           
+        }
+       
+       
+        return tmp;
+    }
+   
     private void checkSetStatement(int pi,int pj,String pTabla){
         int i=pi;
         String columna="";
@@ -38,7 +82,7 @@ public class ExecutionPlan {
             i+=2;//para saltar la coma
         }
     }
-    
+   
     private void checkWhereStatement(int pi,int pj,String pTabla){
         int i=pi;
         int estado=0;
@@ -50,19 +94,19 @@ public class ExecutionPlan {
                 String token = _Querry[i];
                 _Plan+=token;
                 if(token.compareTo("(")!=0 && token.compareTo(")")!=0
-                        && token.toUpperCase().compareTo("AND")!=0 
+                        && token.toUpperCase().compareTo("AND")!=0
                         && token.toUpperCase().compareTo("OR")!=0){
                     //ignora los parantesis y los operadores and y or
                     columna=token;
                     //validar que exista la columna en pTabla
                     estado=1;
-                } 
+                }
             }
             else if(estado==1){//estado para el compare operator   >, <, =, like, not, is null, is not null
                 String token = _Querry[i];
                 _Plan+=token;
                 operador=token;
-                
+               
                 if(token.toLowerCase().compareTo("is")==0){
                     i++;
                     token = _Querry[i];
@@ -78,7 +122,7 @@ public class ExecutionPlan {
                 estado=2;
             }
             else{//estado para value
-                if(operador.toLowerCase().compareTo("is null")!=0 && 
+                if(operador.toLowerCase().compareTo("is null")!=0 &&
                         operador.toLowerCase().compareTo("is not null")!=0){//para esos casos no hay value
                     //validar el tipo de la columna
                     String token = _Querry[i];//value
@@ -93,9 +137,9 @@ public class ExecutionPlan {
         }
     }
     //**************************************************************************
-    
-    
-    
+   
+   
+   
     //CLP Commands
     //**************************************************************************
     private void createPlan_Create_DB(){
@@ -103,18 +147,18 @@ public class ExecutionPlan {
         String nombre = _Querry[indice];
         _Plan += "CREATE_DB "+nombre;
     }
-    
+   
     private void createPlan_Drop_DB(){
         int indice = 2;
         String nombre = _Querry[indice];
         //validar que existe la tabla
         _Plan += "DELETE_DB "+nombre;
     }
-    
+   
     private void createPlan_List_DB(){
         _Plan += "List_DB";
     }
-    
+   
     private void createPlan_Start(){
         //?
     }
@@ -130,10 +174,10 @@ public class ExecutionPlan {
         //validar que existe la tabla
         _Plan += "DISPLAY_DB "+nombre;
     }
-    
+   
     //**************************************************************************
-    
-    
+   
+   
     //DDL Commands
     //**************************************************************************
     private void createPlan_Set_DB(){
@@ -146,24 +190,24 @@ public class ExecutionPlan {
         int indice = 2;
         String nombre = _Querry[indice];
         _Plan += "CREATE_TABLE "+nombre;
-        
+       
         //columnas al system catalog
     }
-    
+   
     private void createPlan_Alter_Table(){
         int indice = 2;
         String nombre = _Querry[indice];
         //validar que existe la tabla
         _Plan += "OPEN_TABLE "+nombre+" WRITE\n";
     }
-    
+   
     private void createPlan_Drop_Table(){
         int indice = 2;
         String nombre = _Querry[indice];
         //validar que existe la tabla
         _Plan += "DELETE_TABLE "+nombre+"\n";
     }
-    
+   
     private void createPlan_Create_Index(){
         int indice = 2;
         String tabla = _Querry[indice];
@@ -171,10 +215,10 @@ public class ExecutionPlan {
         String columna = _Querry[indice+2];
         _Plan += "CREATE_INDEX "+columna+" IN "+tabla+ "\n";
     }
-    
+   
     //**************************************************************************
-    
-    
+   
+   
     //DML Commands
     //**************************************************************************
     private void createPlan_Select(){
@@ -206,19 +250,19 @@ public class ExecutionPlan {
             if(findInQuerry("FOR")!=-1){//select con group by
                 //?
             }
-            
-            
-        } 
-        
+           
+           
+        }
+       
     }
-    
+   
     private void createPlan_Update(){
         int indice = 1;
         String tabla = _Querry[indice];
         //validar que existe la tabla
         _Plan += "OPEN_TABLE "+tabla+" WRITE\n";
         indice++;
-        
+       
         if(findInQuerry("WHERE")!=-1){//select con where
                 int indice2=_Querry.length;
                 checkSetStatement(indice,findInQuerry("WHERE"),tabla);
@@ -228,26 +272,35 @@ public class ExecutionPlan {
             checkSetStatement(indice,_Querry.length,tabla);
         }
     }  
-    
+   
     private void createPlan_Delete(){
         int indice = 2;
         String tabla = _Querry[indice];
         //validar que exista la tabla
         _Plan +="OPEN_TABLE "+tabla+" WRITE\n";
-        
+       
         if(findInQuerry("WHERE")!=-1){//select con where
                 int indice2=_Querry.length;
                 checkWhereStatement(indice,indice2,tabla);
             }
-    }   
-    
+    }  
+   
     private void createPlan_Insert(){
         int indice = 2;//se salta las posiciones de insert into
         String tabla = _Querry[indice];
         //validar q exista la tabla
+       
+        /*
+        156
+        THE STATEMENT DOES NOT IDENTIFY A TABLE
+        */
+       
+       
+       
+       
         _Plan += "OPEN_TABLE "+tabla+" WRITE\n";
         indice+=2;//se posiciona en la primera columna
-        int indice2 = findInQuerry("VALUES")+2;// se salta el caracter "(" 
+        int indice2 = findInQuerry("VALUES")+2;// se salta el caracter "("
         String columna;
         String valor;
         while(indice2 < _Querry.length -1){//se sale al llegar el contador 2 al caracter ")"
@@ -261,17 +314,19 @@ public class ExecutionPlan {
         }
     }
     //**************************************************************************
-    
-
-    
+   
+ 
+   
     //Funcion de entrada
-    
+   
     public void createPlan(String pQuerry){
-        
-        _Querry = pQuerry.split(" ");
-        String comando = _Querry[0].toUpperCase();
+        System.out.println(pQuerry);
+        String tmp = AddSpaces(pQuerry);
+        _Querry = tmp.split(" ");
+        System.out.println(tmp);
+       /* String comando = _Querry[0].toUpperCase();
         String comando2 = _Querry[1].toUpperCase();
-        
+       
         if(comando.compareTo("SELECT")==0){
             createPlan_Select();
         }
@@ -305,9 +360,9 @@ public class ExecutionPlan {
         if(comando.compareTo("ALTER")==0){//alter table
             createPlan_Alter_Table();
         }
-        
+       
         if(comando.compareTo("CREATE")==0){
-            
+           
             if(comando2.compareTo("DATABASE")==0){
                 createPlan_Create_DB();
             }
@@ -318,7 +373,7 @@ public class ExecutionPlan {
                 createPlan_Create_Index();
             }
         }
-        
+       
         if(comando.compareTo("DROP")==0){
             if(comando2.compareTo("DATABASE")==0){
                 createPlan_Drop_DB();
@@ -327,12 +382,12 @@ public class ExecutionPlan {
                 createPlan_Drop_Table();
             }
         }
-        
+       
         //guardar la variable _Plan en un archivo
-        
-    
+       
+    */
     }
-    
-    
-    
+   
+   
+   
 }
