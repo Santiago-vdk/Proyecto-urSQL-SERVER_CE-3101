@@ -33,7 +33,8 @@ public class JsqlParser {
         }
         catch (JSQLParserException ex) {
             String msj = ex.getCause().toString();
-            System.out.println(msj.substring(30, msj.indexOf("Was expecting one of:")));
+            //System.out.println(msj);
+            System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
             return false;
            
             /*
@@ -61,9 +62,11 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     public static void main(String [] args)
         {
             JsqlParser parser = new JsqlParser();
-            parser.Parse("SELECT column_name  ,column_name \n FROM table_name;");
+            parser.Parse("DISPLAY DATABASE adname");
+
+        /*("SELECT column_name  ,column_name \n FROM table_name;");
                    
-                    /*("DEleTE\n" +
+                    ("DEleTE\n" +
                 "\n" +
                 "FROM t \n" +
                 "WHERE                  Country='Germany'\n" +
