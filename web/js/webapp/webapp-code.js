@@ -1,4 +1,5 @@
 var editor;
+
 $(document).ready(function () {
     var mime = 'text/x-sql';
     editor = CodeMirror(document.getElementById("query"), {
@@ -15,6 +16,7 @@ $(document).ready(function () {
 
 
 });
+
 function getCode() {
     return editor.getValue();
 };

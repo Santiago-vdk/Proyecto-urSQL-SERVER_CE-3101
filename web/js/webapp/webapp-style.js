@@ -7,7 +7,7 @@ $(document).ready(function () {
             $('.query-content').animate({height: 180}, 600);
         }
         if ($('.data-content').height() !== 180) {
-            $('.data-content').animate({height: 180}, 600);
+            $('.data-content').animate({height: 200}, 600);
         }
         if ($('.log-content').height() !== 180) {
             $('.log-content').animate({height: 180}, 600);
@@ -57,10 +57,6 @@ $(document).ready(function () {
         e.stopPropagation();
     });
 
-
-
-
-
     //Button Behavior
     $('#execute-query').popover({container: 'body'});
     $('#executing-query').popover({container: 'body'});
@@ -85,11 +81,11 @@ $(document).ready(function () {
     $('#expand-data').click(function (e) {
         e.stopPropagation();
         var toggleHeight;
-        if ($('.data-content').height() === 180) {
+        if ($('.data-content').height() === 200) {
             toggleHeight = "100%";
             $('#button-down-data').attr('class', 'fa fa-caret-up');
         } else {
-            toggleHeight = "180px";
+            toggleHeight = "200px";
             $('#button-down-data').attr('class', 'fa fa-caret-down');
         }
         $('.data-content').animate({height: toggleHeight}, 600);
@@ -113,4 +109,118 @@ $(document).ready(function () {
         }
         $('.main-content').animate({scrollTop: $("#log").offset().top}, 600);
     });
+
+    //Expand Log Box
+    $('#errase-log').click(function (e) {
+        e.stopPropagation();
+        clearTable();
+    });
+
+
+    //Sidebar button
+
+    $('#button-start').click(function (e) {
+        e.stopPropagation();
+        swal({title: "Starting urSQL, Stand by...",
+            text: '<i class="fa fa-refresh fa-spin fa-5x"></i>',
+            html: true,
+            timer: 2000,
+            showConfirmButton: false
+        });
+        sendQuery("START");
+    });
+
+    $('#button-stop').click(function (e) {
+        e.stopPropagation();
+
+        swal({title: "Are you sure?",
+            text: "You are stopping urSQL Systems!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, stop it!",
+            cancelButtonText: "No, keep rocking!",
+            closeOnConfirm: false,
+            closeOnCancel: false
+        }, function (isConfirm) {
+            if (isConfirm) {
+                swal({title: "Stopping urSQL, Stand by...",
+                    text: '<i class="fa fa-refresh fa-spin fa-5x"></i>',
+                    html: true,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                alert("gera");
+                sendQuery("START");
+        } else {
+                swal("Cancelled", "you are safe :)", "error");
+            }
+        });
+    });
+
+
+    $('#button-createdb').click(function (e) {
+        e.stopPropagation();
+        swal({title: "Create Database",
+            text: "Database Name:",
+            type: "input",
+            showCancelButton: true,
+            closeOnConfirm: false,
+            animation: "slide-from-top",
+            inputPlaceholder: ""},
+        function (inputValue) {
+            if (inputValue === false)
+                return false;
+            if (inputValue === "") {
+                swal.showInputError("Please specify a DB name!");
+                return false
+            }
+            swal("Nice!", "New database: " + "'" + inputValue + "'" + " created!", "success");
+            sendQuery("CREATEDATABASE " + inputValue);
+        });
+    });
+
+    $('#button-dropdb').click(function (e) {
+        e.stopPropagation();
+        swal({title: "Drop Database",
+            text: "Database Name:",
+            type: "input",
+            showCancelButton: true,
+            closeOnConfirm: false,
+            animation: "slide-from-top",
+            inputPlaceholder: ""},
+        function (inputValue) {
+            if (inputValue === false)
+                return false;
+            if (inputValue === "") {
+                swal.showInputError("Please specify a DB name!");
+                return false;
+            }
+            swal("Done!", "Database: " + "'" + inputValue + "'" + " dropped!", "success");
+            sendQuery("DROPDATABASE " + inputValue);
+        });
+    });
+    
+    $('#button-statusdb').click(function (e) {
+        e.stopPropagation();
+        var statusJSON = getDBStatus();
+        bootbox.alert('<html><h1>Status DB</h1>');
+    });
+
+    $('#button-listdb').click(function (e) {
+        e.stopPropagation();
+        bootbox.alert('<html><h1>DB LIST</h1>');
+    });
+    
+    
+    $('#button-displaydb').click(function (e) {
+        e.stopPropagation();
+        bootbox.alert('<html><h1>Display DB</h1>');
+    });
+    
+    $('#button-refresh').click(function (e) {
+        e.stopPropagation();
+        refreshTree();
+    });
+
 });
