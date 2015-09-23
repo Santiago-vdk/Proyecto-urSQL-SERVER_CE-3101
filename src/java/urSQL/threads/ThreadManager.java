@@ -6,20 +6,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-/**
- *
- * @author Shagy
- */
+
+
 public class ThreadManager {
-
-    /**
-     *
-     */
     public static ExecutorService _Pool;
-
-    /**
-     *
-     */
     public static Response _DATA;
     private long _TInicio=0;
     private long _TFinal=0;
@@ -27,7 +17,7 @@ public class ThreadManager {
     FutureTask _FutureRdbm;
     
     
-    ThreadManager(){
+    ThreadManager() throws Exception{
         _Pool = Executors.newFixedThreadPool(4);
         _RDBM = new RuntimeDBProcessor();
         _FutureRdbm= new FutureTask(_RDBM);
@@ -36,20 +26,13 @@ public class ThreadManager {
         
     }
     
-    /**
-     *
-     */
+    
     public void stop(){
         _Pool.shutdown();
         System.out.println("Procesos termiandos");
     }
     
-    /**
-     *
-     * @param query
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
+    
     public void sendQuery(String query) throws InterruptedException, ExecutionException{
         _TInicio=System.currentTimeMillis();
         
@@ -65,13 +48,11 @@ public class ThreadManager {
         
     }
 
-    /**
-     *
-     * @param args
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
-    public static synchronized void main(String[] args) throws InterruptedException, ExecutionException {
+    
+    
+    
+    
+    public static synchronized void main(String[] args) throws InterruptedException, ExecutionException, Exception {
         String query = "Select * from Estudiantes;";
         
         
@@ -86,9 +67,7 @@ public class ThreadManager {
         //pool.shutdown();
     }
     
-    /**
-     *
-     */
+    
     public void waitRDBM(){
         while(_FutureRdbm.isDone()){
             

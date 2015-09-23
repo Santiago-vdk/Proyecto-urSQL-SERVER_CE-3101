@@ -21,7 +21,7 @@ public class RuntimeDBProcessor implements Callable {
     FutureTask futureCatalog;
     FutureTask futureDataM;
             
-    RuntimeDBProcessor(){
+    RuntimeDBProcessor() throws Exception{
         _Catalog = new SystemCatalog();
         _DataM= new StoredDataManager();
         futureCatalog = new FutureTask(_Catalog);

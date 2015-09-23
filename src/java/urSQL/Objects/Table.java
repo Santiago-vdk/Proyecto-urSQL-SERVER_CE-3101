@@ -5,7 +5,12 @@
  */
 package urSQL.Objects;
 
+import NET.sourceforge.BplusJ.BplusJ.BplusTree;
+import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
+import static com.sun.javafx.fxml.expression.Expression.not;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -15,25 +20,245 @@ import java.util.List;
 public class Table {
     private List<List> _Values= new ArrayList<List>();
     private List<String> _Columns=new ArrayList<String>();
+    private final String _Dir= "c:\\tmp/DataBases/";
+    private final String _DirSys= "c:\\tmp/DataBases/System_Catalog/";
+    private String _PK="";
+    private String _Schema;
+    private String _Table;
     
-    /**
-     *
-     * @param pList
-     */
-    public void add(List<String> pList){
+    public void setTable(String pSchema,String pTable){
+        _Schema=pSchema;
+        _Table=pTable;
+    }
+    public void charge_Table() throws Exception{
+        BplusTree A= hBplusTree.ReadOnly(_Dir+_Schema+"/"+_Table+".tree",
+                _Dir+_Schema+"/"+_Table+".table");
+        
+        String Key= A.FirstKey();
+        while(Key!=null){
+            String Data= A.get(Key);
+            _Values.add( new ArrayList<>(Arrays.asList(Data.split(","))));
+            Key= A.NextKey(Key);
+            
+                  
+        }
+        A.Shutdown();
+    }
+    
+    
+    public void charge_Table_Sys() throws Exception{
+        BplusTree A= hBplusTree.ReadOnly(_DirSys+_Table+".tree",
+                _DirSys+"/"+_Table+".table");
+        
+        String Key= A.FirstKey();
+        while(Key!=null){
+            String Data= A.get(Key);
+            _Values.add( new ArrayList<>(Arrays.asList(Data.split(","))));
+            Key= A.NextKey(Key);
+            
+                  
+        }
+        A.Shutdown();
+    }
+    
+    
+    public void commit_Table_Sys() throws Exception{
+        boolean tree= new File(_DirSys+_Table+".tree").delete(); 
+        boolean table= new File(_DirSys+_Table+".table").delete(); 
+        BplusTree myTree = hBplusTree.Initialize(_DirSys+_Table+".tree",
+                _Dir+_Schema+"/"+_Table+".table",6);
+        int Index_PK= get_Index(_PK);
+        for (int i=0; i<_Values.size();i++){
+            String tmp="";
+            for(int j=0;j<_Values.get(0).size();j++){
+                if(_Values.get(0).size()==j+1){
+                    tmp=tmp+_Values.get(i).get(j);
+                }
+                else{
+                    tmp=tmp+_Values.get(i).get(j)+",";
+                }
+            }
+            myTree.Set((String)_Values.get(i).get(Index_PK), tmp);
+        }
+        myTree.Commit();
+        myTree.Shutdown();
+    }
+    
+    public void commit_Table() throws Exception{
+        boolean tree= new File(_Dir+_Schema+"/"+_Table+".tree").delete(); 
+        boolean table= new File(_Dir+_Schema+"/"+_Table+".table").delete(); 
+        BplusTree myTree = hBplusTree.Initialize(_Dir+_Schema+"/"+_Table+".tree",
+                _Dir+_Schema+"/"+_Table+".table",6);
+        int Index_PK= get_Index(_PK);
+        for (int i=0; i<_Values.size();i++){
+            String tmp="";
+            for(int j=0;j<_Values.get(0).size();j++){
+                if(_Values.get(0).size()==j+1){
+                    tmp=tmp+_Values.get(i).get(j);
+                }
+                else{
+                    tmp=tmp+_Values.get(i).get(j)+",";
+                }
+            }
+            myTree.Set((String)_Values.get(i).get(Index_PK), tmp);
+        }
+        myTree.Commit();
+        myTree.Shutdown();
+    }
+    
+   public void add(List<String> pList){
        _Values.add(pList);
        
    } 
    
-    /**
-     *
-     */
-    public void printTable(){
-       for(int i=0; i>_Values.size(); i++){
-           for(int j=0; j>_Values.get(0).size(); j++){
+   public void printTable(){
+       for(int i=0; i<_Values.size(); i++){
+           for(int j=0; j<_Values.get(0).size(); j++){
               System.out.print(_Values.get(i).get(j)+"  "); 
            }
            System.out.print("\n");
        }
+   }
+   
+   public void table_get_colums(List<String> pColumn){
+       
+       List<List> tmp1=new ArrayList<List>();
+    
+              
+             
+           
+        for (int j=0;j<_Values.size();j++){
+            List<String> tmp2=new ArrayList<String>();
+            for(int i=0; i<pColumn.size();i++){
+                int Column_Number= get_Index(pColumn.get(i));
+                String tmp3=(String) _Values.get(j).get(Column_Number);
+                tmp2.add(tmp3);
+            }
+            tmp1.add(tmp2);
+        
+       }
+       set_Values(tmp1);
+       
+       
+   }
+   
+   public void join_Table(Table pTabla){
+       List<List> tmp1= pTabla.get_Values();
+       List<List> tmp2= get_Values();
+       List<List> tmp3= new ArrayList<List>();
+        for(int i=0; i<_Values.size();i++){
+            for(int j=0;j<tmp1.size();j++){
+                List<String> tmp4= new ArrayList<String>(tmp2.get(i));
+                tmp4.addAll(tmp1.get(j));
+                tmp3.add(tmp4);
+            }
+        }
+        this.set_Values(tmp3);
+    }
+   
+   
+   
+   public void elim_fila(String pColumA, String pColumB, String pValor, String pComp){
+       int IndxA=get_Index(pColumA);
+       int IndxB=get_Index(pColumB);
+       List<List> tmp=new ArrayList<List>();
+       for(int i=0;i<_Values.size();i++){
+           
+           List<String> tmp2 = new ArrayList<String>(_Values.get(i));
+           if (pColumB!=null){
+                
+             switch (pComp){
+                    case ">":
+                       if(Integer.parseInt(tmp2.get(IndxA))>Integer.parseInt(tmp2.get(IndxB))){
+                           tmp.add(tmp2);
+                       }
+                    case "<":
+                        if(Integer.parseInt(tmp2.get(IndxA))<Integer.parseInt(tmp2.get(IndxB))){
+                           tmp.add(tmp2);
+                       }
+                    case "=":
+                        if(tmp2.get(IndxA)==tmp2.get(IndxB)){
+                           tmp.add(tmp2);
+                       }
+                }
+            }
+           else{
+               System.out.println("Entre");
+               switch (pComp){
+                   
+                    case "is null":
+                       if(tmp2.get(IndxA).equals("NULL")){
+                           tmp.add(tmp2);
+                       } 
+                    case "is not null":
+                        if(!(tmp2.get(IndxA).equals("NULL"))){
+                           tmp.add(tmp2);
+                       } 
+                    
+                    case ">":
+                       if(Integer.parseInt(tmp2.get(IndxA))>Integer.parseInt(pValor)){
+                           tmp.add(tmp2);
+                       }
+                    case "<":
+                        if(Integer.parseInt(tmp2.get(IndxA))<Integer.parseInt(pValor)){
+                           tmp.add(tmp2);
+                       }
+                    case "=":
+                        if(tmp2.get(IndxA).equals(pValor)){
+                           
+                           tmp.add(tmp2);
+                       }
+                
+               }
+           }
+       }
+       set_Values(tmp);
+   }
+   
+   public boolean exists(String pColumn, String pDato){
+       int Index=get_Index(pColumn);
+       boolean bool=false;
+       for(int i=0;i<_Values.size();i++){
+           if(_Values.get(i).get(Index).equals(pDato)){
+               bool=true;
+               break;
+           }
+       }
+       return bool;
+   }
+   
+   /**public String get_Dato(String pColumnA, String pColumnB,String pData){
+       
+       for(int i=0; i<_Values.size();i++){
+           List<String> tmp= new ArrayList(_Values.get(i));
+           String tmp1= tmp.get(get_Index(pColumn));
+       }
+   }**/
+   
+   private int get_Index(String pColumn){
+       int Index=0;
+       for(int i=0;i<_Columns.size();i++){
+           if (_Columns.get(i).equals(pColumn)){
+               Index=i;
+               break;
+           }
+       }
+       return Index;
+   }
+   
+   public void set_Values(List<List> pValues){
+       this._Values = pValues;
+   }
+   public List<List> get_Values(){
+       return _Values;
+   }
+
+    
+   public void setColumns(List<String> pColumns){
+       this._Columns= pColumns;
+   }
+
+   public void set_PK(String pPK){
+       _PK=pPK;
    }
 }
