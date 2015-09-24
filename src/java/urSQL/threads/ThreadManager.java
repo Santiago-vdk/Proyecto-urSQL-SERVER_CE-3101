@@ -36,7 +36,7 @@ public class ThreadManager {
     public void sendQuery(String query) throws InterruptedException, ExecutionException{
         _TInicio=System.currentTimeMillis();
         
-        _RDBM.setQuery("HOLA");
+        //_RDBM.setQuery("HOLA");
         _Pool.execute(_FutureRdbm);
         waitRDBM();
         String final_query = (String) _FutureRdbm.get();
