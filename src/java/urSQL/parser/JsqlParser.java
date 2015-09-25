@@ -33,8 +33,8 @@ public class JsqlParser {
         }
         catch (JSQLParserException ex) {
             String msj = ex.getCause().toString();
-            //System.out.println(msj);
-            System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
+            System.out.println(msj);
+            //System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
             return false;
            
             /*
@@ -62,9 +62,53 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     public static void main(String [] args)
         {
             JsqlParser parser = new JsqlParser();
-            parser.Parse("DISPLAY DATABASE adname");
+            parser.Parse("CREATE TABLE Persons\n" +
+            "(\n" +
+            "P_Id int NOT NULL,\n" +
+            "LastName varchar(255) NOT NULL,\n" +
+            "FirstName varchar,\n" +
+            "Address DATETIME,\n" +
+            "City varchar(255),\n" +
+            "PRIMARY KEY (P_Id)\n" +
+            ")");
+        
+        /*("ALTER TABLE Orders\n" +
+            "ADD CONSTRAINT fk_PerOrders\n" +
+            "FOREIGN KEY (P_Id)\n" +
+            "REFERENCES Persons(P_Id)");
+        
+        ("DROP TABLE tabla");
+        
+        
+        ("CREATE INDEX INDICE ON\n" +
+            "\n" +
+            "tabla (col1)");
+        
+        
+        
+        ("CREATE TABLE Persons\n" +
+            "(\n" +
+            "P_Id int NOT NULL,\n" +
+            "LastName varchar(255) NOT NULL,\n" +
+            "FirstName varchar,\n" +
+            "Address DATETIME,\n" +
+            "City varchar(255),\n" +
+            "PRIMARY KEY (P_Id)\n" +
+            ")");
+        
+        ("INSERT INTO tabla1 (col2,col1, col5)\n" +
+            "\n" +
+            "VALUES(1,2,th)");
+        
+        
+        ("UPDATE tabla1\n" + 
+            "SET colum = val , col2 = val2\n" +
+            "\n" +
+            "WHERE colum='Germany';\n");
+        
+        ("CREATE DATABASE adname");
 
-        /*("SELECT column_name  ,column_name \n FROM table_name;");
+        ("SELECT column_name  ,column_name \n FROM table_name;");
                    
                     ("DEleTE\n" +
                 "\n" +

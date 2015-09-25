@@ -20,11 +20,14 @@ public class Table {
     private List<List> _Values= new ArrayList<List>();
     private List<String> _Columns=new ArrayList<String>();
     private final String _Dir= "c:\\tmp/DataBases/";
-    private final String _DirSys= "c:\\tmp/DataBases/System_Catalog/";
+    //private final String _DirSys= "c:\\tmp/DataBases/System_Catalog/";
     private String _PK="";
     private String _Schema;
     private String _Table;
+
     
+    
+ ///////////////FUNCIONES DE CARGADO Y GUARDADO DE TABLAS///////////////////////   
     public void setTable(String pSchema,String pTable){
         _Schema=pSchema;
         _Table=pTable;
@@ -45,43 +48,6 @@ public class Table {
     }
     
     
-    public void charge_Table_Sys() throws Exception{
-        BplusTree A= hBplusTree.ReadOnly(_DirSys+_Table+".tree",
-                _DirSys+"/"+_Table+".table");
-        
-        String Key= A.FirstKey();
-        while(Key!=null){
-            String Data= A.get(Key);
-            _Values.add( new ArrayList<>(Arrays.asList(Data.split(","))));
-            Key= A.NextKey(Key);
-            
-                  
-        }
-        A.Shutdown();
-    }
-    
-    
-    public void commit_Table_Sys() throws Exception{
-        boolean tree= new File(_DirSys+_Table+".tree").delete(); 
-        boolean table= new File(_DirSys+_Table+".table").delete(); 
-        BplusTree myTree = hBplusTree.Initialize(_DirSys+_Table+".tree",
-                _Dir+_Schema+"/"+_Table+".table",6);
-        int Index_PK= get_Index(_PK);
-        for (int i=0; i<_Values.size();i++){
-            String tmp="";
-            for(int j=0;j<_Values.get(0).size();j++){
-                if(_Values.get(0).size()==j+1){
-                    tmp=tmp+_Values.get(i).get(j);
-                }
-                else{
-                    tmp=tmp+_Values.get(i).get(j)+",";
-                }
-            }
-            myTree.Set((String)_Values.get(i).get(Index_PK), tmp);
-        }
-        myTree.Commit();
-        myTree.Shutdown();
-    }
     
     public void commit_Table() throws Exception{
         boolean tree= new File(_Dir+_Schema+"/"+_Table+".tree").delete(); 
@@ -99,18 +65,27 @@ public class Table {
                     tmp=tmp+_Values.get(i).get(j)+",";
                 }
             }
-            myTree.Set((String)_Values.get(i).get(Index_PK), tmp);
+            myTree.set(String.valueOf(_Values.get(i).get(Index_PK)), tmp);
+            
         }
         myTree.Commit();
         myTree.Shutdown();
+        charge_Table();
     }
+
     
-   public void add(List<String> pList){
-       _Values.add(pList);
-       
-   } 
-   
-   public void printTable(){
+    
+    
+////////////////////////////////////////////////////////////////////////////////
+    
+    
+    
+    
+    
+/////////////////////FUNCIONES DE VIZUALIZACION/////////////////////////////////
+    
+    
+    public void printTable(){
        for(int i=0; i<_Values.size(); i++){
            for(int j=0; j<_Values.get(0).size(); j++){
               System.out.print(_Values.get(i).get(j)+"  "); 
@@ -118,6 +93,25 @@ public class Table {
            System.out.print("\n");
        }
    }
+    
+    
+////////////////////////////////////////////////////////////////////////////////
+    
+   public void add(List<String> pList){
+       _Values.add(pList);
+       
+   } 
+   
+   public void set_Value(String pColumn, String pValor){
+       int Index=get_Index(pColumn);
+       for (int i=0; i<_Values.size();i++){
+           _Values.get(i).remove(Index);
+           _Values.get(i).add(Index, pValor);
+       }
+   }
+   
+
+   
    
    public void table_get_colums(List<String> pColumn){
        
@@ -155,7 +149,103 @@ public class Table {
         this.set_Values(tmp3);
     }
    
-   
+   private boolean ver_Conds(List<Condition> Conds, List<String> tmp2){
+       boolean R= false;
+       for(int x=0;x<Conds.size();x++){
+               Condition tcond= Conds.get(x);
+               int IndxA=get_Index(tcond.get_ColA());
+               int IndxB=get_Index(tcond.get_ColB());
+           if (tcond.get_ColB()!=null){
+               switch (tcond.get_Comp()){
+                    case ">":
+                       if(Integer.parseInt(tmp2.get(IndxA))>Integer.parseInt(tmp2.get(IndxB))){
+                           R=true;
+                       }
+                       else{
+                          R=false; 
+                       }
+                    case "<":
+                        if(Integer.parseInt(tmp2.get(IndxA))<Integer.parseInt(tmp2.get(IndxB))){
+                           R=true;
+                       }
+                    else{
+                         R=false; 
+                       }
+                    case "=":
+                        if(tmp2.get(IndxA).equals(tmp2.get(IndxB))){
+                          R=true;
+                       }
+                    else{
+                          R=false; 
+                       }
+                }
+           }
+           else{
+               switch (tcond.get_Comp()){
+                   
+                    case "is null":
+                       if(tmp2.get(IndxA).equals("NULL")){
+                      R=true;
+                       } 
+                    else{
+                         R=false;
+                       }
+                    case "is not null":
+                        if(!(tmp2.get(IndxA).equals("NULL"))){
+                         R=true;
+                       } 
+                    else{
+                          R=false;
+                       }
+                    
+                    case ">":
+                       if(Integer.parseInt(tmp2.get(IndxA))>Integer.parseInt(tcond.get_Val())){
+                          R=true;
+                       }
+                    else{
+                          R=false;
+                       }
+                    case "<":
+                        if(Integer.parseInt(tmp2.get(IndxA))<Integer.parseInt(tcond.get_Val())){
+                         R=true;
+                       }
+                    else{
+                          R=false; 
+                       }
+                    case "=":
+                        
+                        if(tmp2.get(IndxA).equals(tcond.get_Val())){
+                       R=true;
+                       }
+                    else{
+                           R=false;
+                       }
+                
+               }
+           }
+                
+             
+       }
+       return R;        
+   }
+   public void act_fila(List<Condition> Conds,String Col , String Val){
+       
+       List<List> tmp=new ArrayList<List>();
+       for(int i=0;i<_Values.size();i++){
+           
+           List<String> tmp2 = new ArrayList<String>();
+           tmp2.addAll(_Values.get(i));
+           if (ver_Conds(Conds, tmp2)){
+              tmp2.remove(get_Index(Col));
+              tmp2.add(get_Index(Col), Val);
+              tmp.add(tmp2);
+           }
+           else{
+               tmp.add(tmp2);
+           }
+       }
+       set_Values(tmp);
+   }
    
    public void elim_fila(String pColumA, String pColumB, String pValor, String pComp){
        int IndxA=get_Index(pColumA);
@@ -176,13 +266,13 @@ public class Table {
                            tmp.add(tmp2);
                        }
                     case "=":
-                        if(tmp2.get(IndxA)==tmp2.get(IndxB)){
+                        if(tmp2.get(IndxA).equals(tmp2.get(IndxB))){
                            tmp.add(tmp2);
                        }
                 }
             }
            else{
-               System.out.println("Entre");
+               
                switch (pComp){
                    
                     case "is null":
@@ -213,6 +303,23 @@ public class Table {
        }
        set_Values(tmp);
    }
+    public void borrar_fila(List<Condition> Conds) throws Exception{
+       
+       List<List> tmp=new ArrayList<List>();
+       for(int i=0;i<_Values.size();i++){
+           
+           List<String> tmp2 = new ArrayList<String>();
+           tmp2.addAll(_Values.get(i));
+           if (!ver_Conds(Conds, tmp2)){
+              tmp.add(tmp2); 
+           }
+           
+       }
+       set_Values(tmp);
+       
+   }
+   
+   
    
    public boolean exists(String pColumn, String pDato){
        int Index=get_Index(pColumn);

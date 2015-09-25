@@ -15,7 +15,7 @@ public class Condition {
     private String _Val;
     private String _Comp;
     
-    Condition(String pColA,String pColB,String pVal,String pComp){
+    public Condition(String pColA,String pColB,String pVal,String pComp){
         _ColA=pColA;
         _ColB=pColB;
         _Val=pVal;

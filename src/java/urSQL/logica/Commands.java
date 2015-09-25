@@ -22,7 +22,7 @@ public class Commands {
     private final String _Dir= "c:\\tmp/DataBases/";
     
     
-    public void create_System_Catalog(String schema) throws Exception{
+    void create_System_Catalog() throws Exception{
         boolean mkdir = new File(_Dir+"System_Catalog").mkdir();
         hBplusTree.Initialize(_Dir+"System_Catalog/"+"Sys_Schemas"+".tree",
                 _Dir+"System_Catalog/"+"Sys_Schemas"+".table", 6);
@@ -30,11 +30,9 @@ public class Commands {
                 _Dir+"System_Catalog/"+"Sys_Tables"+".table", 6);
         hBplusTree.Initialize(_Dir+"System_Catalog/"+"Sys_Columns"+".tree",
                 _Dir+"System_Catalog/"+"Sys_Columns"+".table", 6);
-        hBplusTree.Initialize(_Dir+"System_Catalog/"+"Sys_Constraints"+".tree",
-                _Dir+"System_Catalog/"+"Sys_Constraints"+".table", 6);
     }
     
-    public void create_Schema(String pSchema){
+    private void create_Schema(String pSchema){
         boolean mkdir = new File(_Dir+pSchema).mkdir();        
     }
     
@@ -72,18 +70,18 @@ public class Commands {
     
     public static void main(String [] args) throws Exception
 	{
-            //BplusTree myTree = hBplusTree.Initialize("c:\\tmp/DataBases/Esq/Tabla_A.tree","c:\\tmp/DataBases/Esq/Tabla_A.table",6);
+           /* BplusTree myTree = hBplusTree.Initialize("c:\\tmp/DataBases/Esq/Tabla_A.tree","c:\\tmp/DataBases/Esq/Tabla_A.table",6);
             //BplusTree myTree = hBplusTree.Initialize("c:\\tmp/DataBases/Esq/Tabla_B.tree","c:\\tmp/DataBases/Esq/Tabla_B.table",6);
-            //myTree.set("500125", "500125,10000,2003/05/12");
-            //myTree.set("500126", "500126,10001,2003/05/13");
-            //myTree.set("500127", "500127,10004,2003/05/14");
+            myTree.set("500125", "500125,10000,2003/05/12");
+            myTree.set("500126", "500126,10001,2003/05/13");
+            myTree.set("500127", "500127,10004,2003/05/14");
             
             //myTree.set("10000", "10000,IBM");
             //myTree.set("10001", "10001,Hewlett Packard");
             //myTree.set("10002", "10002,Microsoft");
             //myTree.set("10004", "10004,NVIDIA");
-            //myTree.Commit();
-            //myTree.Shutdown();
+            myTree.Commit();
+            myTree.Shutdown();*/
             //BplusTree my = hBplusTree.ReadOnly("c:\\tmp/b.tree","c:\\tmp/b.table");
             Table D= new Table();
             Table E= new Table();
@@ -101,11 +99,27 @@ public class Commands {
             G.add("c");
             H.add("b");
             H.add("c");
-            
+            D.set_PK("a");
             D.setColumns(G);
-            D.elim_fila("a", null, "500126","=");
-            D.table_get_colums(H);
+            Condition v=new Condition("a",null,"500125","=");
+            //Condition r=new Condition("b",null,"10000","=");
+            List<Condition> X = new ArrayList<Condition>();
+            X.add(v);
+            //X.add(r);
+            //D.act_fila(X,"c", "PUTA RAFA");
+            
+            //D.borrar_fila(X);
+            //D.table_get_colums(H);
             
             D.printTable();
+            //D.commit_Table();
+            
+            //Commands A= new Commands();
+            //A.create_System_Catalog();
+            //Table D= new Table();
+            //D.setTable("System_Catalog", "Sys_Columns");
+            //D.charge_Table();
+            //D.printTable();
+            
         }
 }

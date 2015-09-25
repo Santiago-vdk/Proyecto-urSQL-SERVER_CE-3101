@@ -8,6 +8,7 @@ package urSQL.threads;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import urSQL.Objects.Condition;
 import urSQL.Objects.Table;
 
 /**
@@ -66,18 +67,25 @@ public class SystemCatalog implements Callable{
         _Table_Schemas= new Table();
         _Table_Tables= new Table();
         _Table_Columns= new Table();
-        _Table_Schemas.setTable(_Dir, _TSchema);
-        _Table_Tables.setTable(_Dir, _TTable);
-        _Table_Columns.setTable(_Dir, _TColumn);
-        _Table_Schemas.charge_Table_Sys();
-        _Table_Tables.charge_Table_Sys();
-        _Table_Columns.charge_Table_Sys();
+        _Table_Schemas.setTable("System_Catalog", _TSchema);
+        _Table_Tables.setTable("System_Catalog", _TTable);
+        _Table_Columns.setTable("System_Catalog", _TColumn);
+        _Table_Schemas.charge_Table();
+        _Table_Tables.charge_Table();
+        _Table_Columns.charge_Table();
         _Table_Schemas.setColumns(_Columns_Schema);
         _Table_Tables.setColumns(_Columns_Tables);
         _Table_Columns.setColumns(_Columns_Columns);
-        
+        _Table_Schemas.set_PK("Schema");
+        _Table_Tables.set_PK("Table");
+        _Table_Columns.set_PK("Column");
     }
     
+    private void commitTables() throws Exception{
+       _Table_Schemas.commit_Table();
+        _Table_Tables.commit_Table();
+        _Table_Columns.commit_Table();
+    }
     private void setColumns(){
         _Columns_Schema= new ArrayList<String>();
         _Columns_Tables= new ArrayList<String>();
@@ -107,12 +115,12 @@ public class SystemCatalog implements Callable{
         Tmp.elim_fila("Column", null, pColumn, "=");
         return Tmp.exists("PK", "true");
     }
-    public boolean verify_Column_Type(String pSchema,String pTable, String pColumn, String pType){
+    public String verify_Column_Type(String pSchema,String pTable, String pColumn){
         Table Tmp= _Table_Columns;
         Tmp.elim_fila("Schema", null, pSchema, "=");
         Tmp.elim_fila("Table", null, pTable, "=");
         Tmp.elim_fila("Column", null, pColumn, "=");
-        return Tmp.exists("Type", pType);
+        return (String) Tmp.get_Values().get(0).get(5);
         
     }
     public boolean verify_Column(String pSchema,String pTable, String pColumn){
@@ -133,7 +141,7 @@ public class SystemCatalog implements Callable{
         Tmp.elim_fila("Schema", null, pSchema, "=");
         Tmp.elim_fila("Table", null, pTable, "=");
         Tmp.elim_fila("Column", null, pColumn, "=");
-        return Tmp.exists("Modifider", "true");
+        return Tmp.exists("Modifider", "not null");
         
     }
     /////////////////////////////////////////////////////////////////////////////
@@ -183,21 +191,29 @@ public class SystemCatalog implements Callable{
     ////////FUNCIONES DE RECUPERACION DE LA METADATA DE LAS COLUMNAS////////////
     
     public String re_Columns(String pSchema,String pTable){
-        List<String> Tmp1= new ArrayList<String>();
-        Tmp1.add("Column");
-        Table Tmp2 = _Table_Columns;
-        Tmp2.elim_fila("Schema", null,pSchema ,"=");
-        Tmp2.elim_fila("Table", null,pTable ,"=");
-        Tmp2.setColumns(Tmp1);
-        List<List> Tmp3= new ArrayList<List>();
-        Tmp3.addAll(Tmp2.get_Values());
+        _Table_Columns.elim_fila("Schema", null, pSchema, "=");
+        _Table_Columns.elim_fila("Table", null, pTable, "=");
+        
         String Tmp4="";
-        for(int i=0;i<Tmp3.size();i++){
-            if(Tmp3.size()==i+1){
-                Tmp4= Tmp4+ Tmp3.get(i).get(0).toString();
+        for(int i=0;i<_Table_Columns.get_Values().size();i++){
+            if(_Table_Columns.get_Values().size()==i+1){
+                Tmp4= Tmp4+ _Table_Columns.get_Values().get(i).get(2).toString();
             }
             else{
-                Tmp4= Tmp4+ Tmp3.get(i).get(0).toString()+",";
+                Tmp4= Tmp4+ _Table_Columns.get_Values().get(i).get(2).toString()+",";
+            }
+        }
+        return Tmp4;
+    }
+    
+    public String re_PK(String pSchema,String pTable){
+        _Table_Columns.elim_fila("Schema", null, pSchema, "=");
+        _Table_Columns.elim_fila("Table", null, pTable, "=");
+        
+        String Tmp4="";
+        for(int i=0;i<_Table_Columns.get_Values().size();i++){
+            if(_Table_Columns.get_Values().get(i).get(3).equals("true")){
+                Tmp4= String.valueOf(_Table_Columns.get_Values().get(i).get(2));
             }
         }
         return Tmp4;
@@ -205,39 +221,86 @@ public class SystemCatalog implements Callable{
     
     ////////////////////////////////////////////////////////////////////////////
     
+    /////////////////FUNCIONES DE ELIMINACION///////////////////////////////////
+    public void elim_Schema() throws Exception{
+        Condition A= new Condition("Schema",null,_Schema,"=");
+        List<Condition> X= new ArrayList<Condition>();
+        X.add(A);
+        _Table_Schemas.borrar_fila(X);
+        _Table_Schemas.commit_Table();
+        _Table_Tables.borrar_fila(X);
+        _Table_Tables.commit_Table();
+        _Table_Columns.borrar_fila(X);
+        _Table_Columns.commit_Table();
+    }
     
+    public void elim_Table() throws Exception{
+        Condition A= new Condition("Table",null,_Table,"=");
+        List<Condition> X= new ArrayList<Condition>();
+        X.add(A);
+        _Table_Tables.borrar_fila(X);
+        _Table_Tables.commit_Table();
+        _Table_Columns.borrar_fila(X);
+        _Table_Columns.commit_Table();
+    }
     
     @Override
     public String call() throws InterruptedException, Exception {
 
         String Result="";
-        switch(_Mode){
+       
         
-            case "V_TY":
-                Result = Boolean.toString(verify_Column_Type(_Schema,_Table, _Column, _Type));
-            case "V_PK":
+        
+            if (_Mode.equals("V_TY")){
+                Result = verify_Column_Type(_Schema,_Table, _Column);
+            }
+            if (_Mode.equals("V_PK")){
                 Result = Boolean.toString(verify_Pk(_Schema,_Table,_Column));
-            case "V_S":
+            }
+                
+            if (_Mode.equals("V_S")){
                 Result = Boolean.toString(verify_Schema(_Schema));
-            case "V_T":
-                Result = Boolean.toString(verify_Table(_Schema,_Table));
-            case "V_C":
+            }
+                
+            if (_Mode.equals("V_T")){
+               Result = Boolean.toString(verify_Table(_Schema,_Table)); 
+            }
+                
+            if (_Mode.equals("V_C")){
                 Result = Boolean.toString(verify_Column(_Schema,_Table,_Column));
-            case "V_M":
-                Result = Boolean.toString(verify_Column_Modifider(_Schema,_Table,_Column));
-            case "I_S":
-               insert_Schema(_Schema);
+            }
+                
+            if (_Mode.equals("V_M")){
+               Result = Boolean.toString(verify_Column_Modifider(_Schema,_Table,_Column)); 
+            }
+                
+            if (_Mode.equals("I_S")){
+                
+                insert_Schema(_Schema);
                 Result= "true";
-            case "I_T":
+            }
+            if (_Mode.equals("I_T")){
                 insert_Table(_Schema,_Table);
                 Result= "true";
-            case "I_C":
+            }
+            if (_Mode.equals("I_C")){
                 insert_Column(_Schema,_Table,_Column,_PK,_Modifider,_Type,_Order);
                 Result= "true";
-            case "R_C":
-                Result = re_Columns(_Schema,_Table);    
-        }
-        
+            }               
+            if (_Mode.equals("R_C")){
+                Result = re_Columns(_Schema,_Table);
+            }       
+            if (_Mode.equals("R_PK")){
+                Result = re_PK(_Schema,_Table);
+            } 
+             if (_Mode.equals("E_S")){
+                elim_Schema();
+                Result= "true";
+            }       
+            if (_Mode.equals("E_T")){
+                elim_Table();
+                Result= "true";
+            } 
         
         return Result;
     }
