@@ -11,18 +11,14 @@ import java.util.concurrent.FutureTask;
 public class ThreadManager {
     public static ExecutorService _Pool;
     public static Response _DATA;
-    private long _TInicio=0;
-    private long _TFinal=0;
-    RuntimeDBProcessor _RDBM;
-    FutureTask _FutureRdbm;
-    
-    
+    public static String Current_Schema;
+    public static SystemCatalog _SYCT;
+    public static FutureTask futureSystem;
+  
     ThreadManager() throws Exception{
         _Pool = Executors.newFixedThreadPool(4);
-        _RDBM = new RuntimeDBProcessor();
-        _FutureRdbm= new FutureTask(_RDBM);
-        
-        
+        _SYCT= new SystemCatalog();
+       futureSystem= new FutureTask(_SYCT);
         
     }
     
@@ -33,18 +29,13 @@ public class ThreadManager {
     }
     
     
-    public void sendQuery(String query) throws InterruptedException, ExecutionException{
-        _TInicio=System.currentTimeMillis();
+    public void sendQuery() throws InterruptedException, ExecutionException{
+        _SYCT.set_Plan("P" ,"P", null, null, "not null", "varchar(12)", "no", "R_PK");
+        _Pool.execute(futureSystem);
+        waitS();
+        System.out.println(futureSystem.get());
         
-        //_RDBM.setQuery("HOLA");
-        _Pool.execute(_FutureRdbm);
-        waitRDBM();
-        String final_query = (String) _FutureRdbm.get();
-        _TFinal=System.currentTimeMillis();
         
-        float Time= (_TFinal - _TInicio)/1000000;
-        System.out.println(final_query);
-        System.out.println("Task is completed, Time: " + Time+ " s"); 
         
     }
 
@@ -57,7 +48,7 @@ public class ThreadManager {
         
         
         ThreadManager a = new ThreadManager();
-        a.sendQuery(query);
+        a.sendQuery();
         a.stop();
         
         
@@ -68,8 +59,8 @@ public class ThreadManager {
     }
     
     
-    public void waitRDBM(){
-        while(_FutureRdbm.isDone()){
+    public void waitS(){
+        while(futureSystem.isDone()){
             
         }
     }

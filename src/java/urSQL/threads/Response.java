@@ -5,6 +5,8 @@
  */
 package urSQL.threads;
 
+import urSQL.Objects.Table;
+
 /**
  *
  * @author David
@@ -12,9 +14,17 @@ package urSQL.threads;
 public class Response {
     
     private String _State;
+    private Table _Tabla=null;
     
     Response(){
         _State="";
+    }
+    
+    public void setTabla(Table pTabla){
+        _Tabla=pTabla;
+    }
+    public Table getTabla(){
+        return _Tabla;
     }
     
 }
