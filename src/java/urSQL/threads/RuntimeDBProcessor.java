@@ -33,7 +33,7 @@ public class RuntimeDBProcessor implements Callable {
     public String call() throws Exception {
         Response response = Parse(Query);
         System.out.println(response.getState());
-        return Boolean.toString(true);
+        return response.getState();
     }
    
  
