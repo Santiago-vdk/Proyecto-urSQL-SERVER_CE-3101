@@ -7,13 +7,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import urSQL.logica.Facade;
 
 /**
  *
  * @author Shagy
  */
 public class ThreadManager {
-
+    
+    public static String[] ListDB= null;
     /**
      *
      */
@@ -70,9 +72,9 @@ public class ThreadManager {
     public static FutureTask futureSD;
     private String _Dir = "c:\\tmp/";
   
-    ThreadManager() throws Exception{
+    public ThreadManager() throws Exception{
         
-        
+        Start();
     }
     
     /**
@@ -80,7 +82,7 @@ public class ThreadManager {
      * @throws Exception
      */
     public void Start() throws Exception{
-        _Pool = Executors.newFixedThreadPool(4);
+        _Pool = Executors.newFixedThreadPool(40);
         _SYCT= new SystemCatalog();
         _RDBM = new RuntimeDBProcessor();
        _STDM = new StoredDataManager();
@@ -97,6 +99,7 @@ public class ThreadManager {
      */
     public void stop(){
         _Pool.shutdown();
+        
        
     }
     
@@ -105,7 +108,19 @@ public class ThreadManager {
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    public void sendQuery() throws InterruptedException, ExecutionException{
+    public void sendQuery( String pQuery) throws InterruptedException, ExecutionException, Exception{
+        Start();
+        _RDBM.set_Query(pQuery);
+        _Pool.execute(futureRDBM);
+        waitRDBM();
+        if (futureRDBM.get().equals("true")){
+            System.out.println("Entre");
+            _Pool.execute(ThreadManager.futureSTDM);
+            waitSTDM();
+        
+        }
+        _Pool.shutdown();
+        System.gc();
         
         
         
@@ -123,10 +138,22 @@ public class ThreadManager {
      */
     public static synchronized void main(String[] args) throws InterruptedException, ExecutionException, Exception {
        
+        //ThreadManager A = new ThreadManager();
+        //A.iniciar_Directorios();
         
+        Facade A = new Facade();
+        A.processQuerry("START");
+        //A.processQuerry("CREATE DATABASE jajaja");
+        A.processQuerry("set DATABASE kkk");
+        //A.processQuerry("DROP TABLE Persons");
+        A.processQuerry("CREATE TABLE Persons\n" +
+            "(\n" +
+            "A int NOT NULL,\n" +
+            "B varchar(255) NOT NULL,\n" +
+            "C varchar,\n" +
+            "PRIMARY KEY (P_Id)\n" +
+            ")");
         
-        ThreadManager a = new ThreadManager();
-        a.iniciar_Directorios();
       //a.stop();
         
         
@@ -188,6 +215,8 @@ public class ThreadManager {
                 _Dir+"DataBases/"+"System_Catalog/"+"Sys_Columns"+".table", 6);
         
         new File(_Dir+"DataBases"+"/"+"System_Catalog"+"/"+"Execution_Plan.txt").createNewFile();
+        new File(_Dir+"DataBases"+"/"+"System_Catalog"+"/"+"Table.txt").createNewFile();
+        new File(_Dir+"DataBases"+"/"+"System_Catalog"+"/"+"List.txt").createNewFile();
     }
 }
 

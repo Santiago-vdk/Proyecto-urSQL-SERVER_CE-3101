@@ -5,31 +5,48 @@
  */
 package urSQL.logica;
 
+import java.util.concurrent.ExecutionException;
+import urSQL.threads.ThreadManager;
+
 /**
  *
  * @author RafaelAngel
  */
 public class Facade {
     boolean _On = false;
+    ThreadManager Threads;
+
+    public Facade() throws Exception {
+        this.Threads = new ThreadManager();
+    }
     
     /**
      *
      * @param pQuerry
      */
-    public void processQuerry(String pQuerry){
+    public void processQuerry(String pQuerry) throws InterruptedException, ExecutionException, Exception{
         if(_On){
             
             if(pQuerry.toUpperCase().compareTo("STOP")==0){
                 _On = false;
                  //finaliza los threads
             }
-            
-            //process querry
+            else{
+                Threads.sendQuery(pQuerry);
+            }
+           
         }
         else if(pQuerry.toUpperCase().compareTo("START")==0){
             _On = true;
-            //inicializa los threads
+            
         }
+        
     }
+    
+    public String[] getList(){
+        return ThreadManager.ListDB;
+    }
+    
+    
     
 }

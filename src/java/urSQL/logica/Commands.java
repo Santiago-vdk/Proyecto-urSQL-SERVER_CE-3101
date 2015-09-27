@@ -10,6 +10,7 @@ import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONObject;
 import urSQL.Objects.Condition;
 import urSQL.Objects.Table;
 
@@ -108,6 +109,36 @@ public class Commands {
     public static void main(String [] args) throws Exception
 	{
         
+            Table a= new Table();
+            a.setTable("kkk", "Persons");
+            a.charge_Table();
+            List<String> n = new ArrayList<String>();
+            n.add("a");
+            a.setColumns(n);
+            a.set_PK("a");
             
+            List<String> o = new ArrayList<String>();
+            o.add("Puta");
+            //a.add(o);
+            
+            
+           
+            
+            
+
+            a.printTable();
+            /*
+            JSONObject obj = new JSONObject();
+            List<List> C = new ArrayList<List>();
+            List<String> D = new ArrayList<String>();
+            D.add("a");
+            D.add("b");
+            D.add("c");
+            C.add(D);
+            String[][] A = new String[C.size()][C.get(0).size()];
+            A= C.toArray(A);
+            obj.put("asa",A );
+            String[][] B =(String[][])obj.get("asa");
+            System.out.println(B[0][2]); */
         }
 }
