@@ -108,7 +108,7 @@ public class ThreadManager {
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    public void sendQuery( String pQuery) throws InterruptedException, ExecutionException, Exception{
+    public String sendQuery( String pQuery) throws InterruptedException, ExecutionException, Exception{
         Start();
         _RDBM.set_Query(pQuery);
         _Pool.execute(futureRDBM);
@@ -121,7 +121,7 @@ public class ThreadManager {
         }
         _Pool.shutdown();
         System.gc();
-        
+        return (String)futureSTDM.get();
         
         
         

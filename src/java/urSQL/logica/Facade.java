@@ -15,6 +15,7 @@ import urSQL.threads.ThreadManager;
 public class Facade {
     boolean _On = false;
     ThreadManager Threads;
+    
 
     public Facade() throws Exception {
         this.Threads = new ThreadManager();
@@ -24,7 +25,7 @@ public class Facade {
      *
      * @param pQuerry
      */
-    public void processQuerry(String pQuerry) throws InterruptedException, ExecutionException, Exception{
+    public String processQuerry(String pQuerry) throws InterruptedException, ExecutionException, Exception{
         if(_On){
             
             if(pQuerry.toUpperCase().compareTo("STOP")==0){
@@ -32,7 +33,7 @@ public class Facade {
                  //finaliza los threads
             }
             else{
-                Threads.sendQuery(pQuerry);
+                return Threads.sendQuery(pQuerry);
             }
            
         }
@@ -40,6 +41,7 @@ public class Facade {
             _On = true;
             
         }
+        return "";
         
     }
     
