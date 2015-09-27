@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import urSQL.logica.Facade;
+import urSQL.logica.logHandler;
 
 /**
  *
@@ -70,7 +71,7 @@ public class ThreadManager {
      *
      */
     public static FutureTask futureSD;
-    private String _Dir = "c:\\tmp/";
+    private String _Dir = logHandler.getInstance().getRootPath()+"/urSQL/";
   
     public ThreadManager() throws Exception{
         
@@ -146,13 +147,13 @@ public class ThreadManager {
         //A.processQuerry("CREATE DATABASE jajaja");
         A.processQuerry("set DATABASE kkk");
         //A.processQuerry("DROP TABLE Persons");
-        A.processQuerry("CREATE TABLE Persons\n" +
+        /*A.processQuerry("CREATE TABLE Persons\n" +
             "(\n" +
             "A int NOT NULL,\n" +
             "B varchar(255) NOT NULL,\n" +
             "C varchar,\n" +
             "PRIMARY KEY (P_Id)\n" +
-            ")");
+            ")");*/
         
       //a.stop();
         

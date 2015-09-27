@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import urSQL.logica.logHandler;
 
 /**
  *
@@ -19,7 +20,7 @@ import java.util.List;
 public class Table {
     private List<List> _Values= new ArrayList<List>();
     private List<String> _Columns=new ArrayList<String>();
-    private final String _Dir= "c:\\tmp/DataBases/";
+    private final String _Dir= logHandler.getInstance().getRootPath()+"/urSQL/DataBases/";
     //private final String _DirSys= "c:\\tmp/DataBases/System_Catalog/";
     private String _PK="";
     private String _Schema;

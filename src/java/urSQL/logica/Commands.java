@@ -20,7 +20,7 @@ import urSQL.Objects.Table;
  * @author David
  */
 public class Commands {
-    private final String _Dir= "c:\\tmp/DataBases/";
+    private final String _Dir= logHandler.getInstance().getRootPath()+"/urSQL/DataBases/";
     
     
     void create_System_Catalog() throws Exception{
