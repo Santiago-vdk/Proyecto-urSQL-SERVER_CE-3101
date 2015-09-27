@@ -1,6 +1,8 @@
 package urSQL.threads;
 
 
+import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
+import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,27 +15,43 @@ public class ThreadManager {
     public static Response _DATA;
     public static String Current_Schema;
     public static SystemCatalog _SYCT;
+    public static RuntimeDBProcessor _RDBM;
+    public static StoredDataManager _STDM;
+    public static StoredData _SD;
     public static FutureTask futureSystem;
+    public static FutureTask futureRDBM;
+    public static FutureTask futureSTDM;
+    public static FutureTask futureSD;
+    private String _Dir = "c:\\tmp/";
   
     ThreadManager() throws Exception{
-        _Pool = Executors.newFixedThreadPool(4);
-        _SYCT= new SystemCatalog();
-       futureSystem= new FutureTask(_SYCT);
+        
         
     }
     
+    public void Start() throws Exception{
+        _Pool = Executors.newFixedThreadPool(4);
+        _SYCT= new SystemCatalog();
+        _RDBM = new RuntimeDBProcessor();
+       _STDM = new StoredDataManager();
+       _SD =  new StoredData();
+       futureSystem= new FutureTask(_SYCT);
+       futureRDBM = new FutureTask(_RDBM);
+       futureSTDM = new FutureTask(_STDM);
+       futureSD = new FutureTask(_SD);
+       
+    }
     
     public void stop(){
         _Pool.shutdown();
-        System.out.println("Procesos termiandos");
+       
     }
     
     
     public void sendQuery() throws InterruptedException, ExecutionException{
-        _SYCT.set_Plan("P" ,"P", null, null, "not null", "varchar(12)", "no", "R_PK");
-        _Pool.execute(futureSystem);
-        waitS();
-        System.out.println(futureSystem.get());
+        
+        
+        
         
         
         
@@ -44,12 +62,12 @@ public class ThreadManager {
     
     
     public static synchronized void main(String[] args) throws InterruptedException, ExecutionException, Exception {
-        String query = "Select * from Estudiantes;";
+       
         
         
         ThreadManager a = new ThreadManager();
-        a.sendQuery();
-        a.stop();
+        a.iniciar_Directorios();
+      //a.stop();
         
         
         
@@ -59,10 +77,40 @@ public class ThreadManager {
     }
     
     
-    public void waitS(){
+    public void waitRDBM(){
+        while(futureRDBM.isDone()){
+            
+        }
+    }
+    public static void waitSC(){
         while(futureSystem.isDone()){
             
         }
+    }
+    public  void waitSTDM(){
+        while(futureSTDM.isDone()){
+            
+        }
+    }
+    public void waitSD(){
+        while(futureSD.isDone()){
+            
+        }
+    }
+    
+    
+    public void iniciar_Directorios() throws Exception{
+        boolean mkdir1 = new File(_Dir).mkdir();
+        boolean mkdir2 = new File(_Dir+"DataBases").mkdir();
+        boolean mkdir3 = new File(_Dir+"DataBases/"+"System_Catalog").mkdir();
+        hBplusTree.Initialize(_Dir+"DataBases/"+"System_Catalog/"+"Sys_Schemas"+".tree",
+                _Dir+"DataBases/"+"System_Catalog/"+"Sys_Schemas"+".table", 6);
+        hBplusTree.Initialize(_Dir+"DataBases/"+"System_Catalog/"+"Sys_Tables"+".tree",
+                _Dir+"DataBases/"+"System_Catalog/"+"Sys_Tables"+".table", 6);
+        hBplusTree.Initialize(_Dir+"DataBases/"+"System_Catalog/"+"Sys_Columns"+".tree",
+                _Dir+"DataBases/"+"System_Catalog/"+"Sys_Columns"+".table", 6);
+        
+        new File(_Dir+"DataBases"+"/"+"System_Catalog"+"/"+"Execution_Plan.txt").createNewFile();
     }
 }
 
