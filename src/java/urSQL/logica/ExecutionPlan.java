@@ -100,6 +100,18 @@ public class ExecutionPlan {
         
     }
     
+    private void checkJoinStatement(int pi,int pj){
+        int i =pi;
+        _Plan+="JOIN";
+        while(i<=pj){
+            String tabla = _Querry[i];
+            //validar que exista la tabla
+            _Plan+="~"+tabla;
+            i+=2;
+        }
+        _Plan+="\n";
+    }
+    
     private void checkSetStatement(int pi,int pj,String pTabla){
         int i=pi;
         String columna;
@@ -305,35 +317,73 @@ public class ExecutionPlan {
     private void createPlan_Select(){
         int indice = findInQuerry("FROM")+1;
         String tabla = _Querry[indice];
-        if(tabla.toUpperCase().compareTo("JOIN")==0){
-            //validaciones para el join
+        
+        int indiceWhere=findInQuerry("WHERE");
+        int indiceGroup=findInQuerry("GROUP");
+        int indiceFor=findInQuerry("FOR");
+        int indiceJoin =findInQuerry("JOIN");
+        
+        if(indiceJoin!=-1){//select con join
+            if(indiceWhere!=-1){
+               checkJoinStatement(indiceJoin-1,indiceWhere-1);
+            }   
+            else if(indiceGroup!=-1){
+                checkJoinStatement(indiceJoin-1,indiceGroup-1);
+            }
+            else if(indiceFor!=-1){
+                checkJoinStatement(indiceJoin-1,indiceFor-1);
+            }
+            else{
+                checkJoinStatement(indiceJoin-1,_Querry.length-1);
+            }
+           
         }
         else{
             //validar que existe la tabla en el catalogo
-            _Plan += "OPEN_TABLE "+tabla+" READ\n";
+            _Plan += "OPEN_TABLE~"+tabla+"\n";
             indice++;
-            if(findInQuerry("WHERE")!=-1){//select con where
+            if(indiceWhere!=-1){//select con where
                 int indice2;
-                if(findInQuerry("GROUP")!=-1){
-                    indice2=findInQuerry("GROUP");
+                if(indiceGroup!=-1){
+                    indice2=indiceGroup;
                 }
-                else if(findInQuerry("FOR")!=-1){
-                    indice2=findInQuerry("FOR");
+                else if(indiceFor!=-1){
+                    indice2=indiceFor;
                 }
                 else{
                     indice2=_Querry.length;
                 }
-                checkWhereStatement(indice,indice2,tabla);
+                checkWhereStatement(indiceWhere+1,indice2,tabla);
             }
-            if(findInQuerry("GROUP")!=-1){//select con group by
-                //validar que existan las columnas
+            if(indiceGroup!=-1){//select con group by
+                _Plan += "GROUP_BY";
+                int fin;
+                if(indiceFor!=-1){
+                    fin=indiceFor;
+                }
+                else{
+                    fin=_Querry.length-1;
+                }
+                indiceGroup+=2;
+                while(indiceGroup<=fin){
+                    _Plan +="~"+_Querry[indiceGroup];
+                    indiceGroup+=2;//se salta la coma
+                }
+                _Plan += "\n";
+                
             }
-            if(findInQuerry("FOR")!=-1){//select con group by
-                //?
+            if(indiceFor!=-1){//select con for json/xml
+                if(findInQuerry("JSON")!=-1){
+                    _Plan += "FOR_JSON\n";
+                }
+                else{
+                    _Plan += "FOR_XML\n";
+                }
             }
-           
-           
         }
+        
+        //seleccionar columnas 
+        
        
     }
    
