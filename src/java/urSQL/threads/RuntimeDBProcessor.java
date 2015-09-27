@@ -31,10 +31,9 @@ public class RuntimeDBProcessor implements Callable {
     
     @Override
     public String call() throws Exception {
-        
-        boolean tmp = Parse(Query);
-        System.out.println(tmp);
-        return Boolean.toString(tmp);
+        Response response = Parse(Query);
+        System.out.println(response.getState());
+        return Boolean.toString(true);
     }
    
  
@@ -55,14 +54,16 @@ public class RuntimeDBProcessor implements Callable {
     /**
      *
      * @param pQuery
-     * @throws java.lang.InterruptedException
+     * @throws java.lang.Interrupt
+     * @return edException
      * @throws java.util.concurrent.ExecutionException
      * @throws java.io.IOException
      * @throws org.json.JSONException
      */
+      
        
     
-    public boolean Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
+    public Response Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
     try{
             net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuery);
             //net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse("select *");
@@ -76,8 +77,10 @@ public class RuntimeDBProcessor implements Callable {
             }
             else{
                 String msj = ex.getCause().toString();
+                Response response = new Response();
+                response.setState("1064: You have an error in your SQL syntax");
                 //System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
-                return false;
+                return response;
             }
             
             //ver si es un clp o alter
@@ -820,7 +823,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
      * @throws java.util.concurrent.ExecutionException
      */
        
-    public boolean createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
+    public Response createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
         String tmp = adjustQuery(pQuery);
         _Query = tmp.split(" ");
         String comando = _Query[0].toUpperCase();
@@ -885,11 +888,14 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         if(valido){
             
             logHandler.getInstance().logExecution_Plan(_Plan);
+            Response response = new Response();
              //guardar la variable _Plan en un archivo
-            return true;
+            return response;
         }
         else{
-            return false;
+            Response response = new Response();
+            response.setState("42601 	A character, token, or clause is invalid or missing.");
+            return response;
         }
        
    
