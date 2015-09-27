@@ -8,8 +8,8 @@ package urSQL.threads;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.json.JSONException;
 import urSQL.logica.logHandler;
  
@@ -45,11 +45,104 @@ public class RuntimeDBProcessor implements Callable {
    
    
    
+   // PARSER
    
+    /**
+     *
+     * @param pQuery
+     * @throws java.lang.InterruptedException
+     * @throws java.util.concurrent.ExecutionException
+     * @throws java.io.IOException
+     * @throws org.json.JSONException
+     */
+       
+    
+    public void Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
+    try{
+            net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuery);
+            //net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse("select *");
+            //System.out.println(parse.toString());
+            createPlan(parse.toString());//crea el plan de ejecucion
+        }
+        catch (JSQLParserException ex) {
+            if(SecondTry(pQuery)){
+                createPlan(elimSpaces(pQuery));
+            }
+            else{
+                String msj = ex.getCause().toString();
+                System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
+            }
+            
+            //ver si es un clp o alter
+           
+           
+            /*
+            Error: 1149 SQLSTATE: 42000 (ER_SYNTAX_ERROR)
+ 
+Message: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use
+           
+            */
+        }
+    }
+   
+    private String elimSpaces(String pQuery){
+        String tmp = "";
+        boolean espacio=true;
+        for(int i=0;i<pQuery.length();i++){
+            if((pQuery.substring(i,i+1).compareTo(" ")==0 && espacio)
+                    || pQuery.substring(i,i+1).compareTo(";")==0
+                    || pQuery.substring(i,i+1).compareTo("\n")==0){
+                //pass
+            }
+            else{
+                if(pQuery.substring(i,i+1).compareTo(" ")==0){
+                    tmp+=pQuery.substring(i,i+1);
+                    espacio = true;
+                }
+                else{
+                    tmp+=pQuery.substring(i,i+1);
+                    espacio = false;
+                }
+            }
+        }
+        return tmp;
+    }
+   
+    private boolean SecondTry(String pQuery){
+        boolean valido=false;
+        String tmp = elimSpaces(pQuery);
+        if(tmp.substring(0,16).toUpperCase().compareTo("CREATE DATABASE ")==0){
+            valido=true;
+        }
+        if(tmp.toUpperCase().compareTo("LIST DATABASES")==0){
+            valido=true;
+        }
+        if(tmp.toUpperCase().compareTo("START")==0){
+            valido=true;
+        }
+        if(tmp.toUpperCase().compareTo("GET STATUS")==0){
+            valido=true;
+        }
+        if(tmp.toUpperCase().compareTo("STOP")==0){
+            valido=true;
+        }
+        if(tmp.substring(0,17).toUpperCase().compareTo("DISPLAY DATABASE ")==0){
+            valido=true;
+        }
+        
+        return valido;
+    }
+    
+    //**************************************************************************
+    
+    
+    
+    
+    //CREACION DEL PLAN DE EJECUCION
    
     private String[] _Query;
     private String _Plan="";
-   
+    
     //funciones auxiliares
     //**************************************************************************
     private int findInQuery(String pString){
