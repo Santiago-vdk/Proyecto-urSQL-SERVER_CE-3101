@@ -45,6 +45,8 @@ public class Table {
      * @throws Exception
      */
     public void charge_Table() throws Exception{
+        _Values.removeAll(_Values);
+        
         BplusTree A= hBplusTree.ReadOnly(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table");
         
@@ -56,9 +58,18 @@ public class Table {
             
                   
         }
+        
         A.Shutdown();
+        
+        
     }
-    
+    public void insert(String key,String val) throws Exception{
+       BplusTree myTree = hBplusTree.ReOpen(_Dir+_Schema+"/"+_Table+".tree",
+                _Dir+_Schema+"/"+_Table+".table");
+       myTree.Set(key, val);
+       myTree.Commit();
+       myTree.Shutdown();
+    }
     /**
      *
      * @throws Exception
@@ -66,6 +77,7 @@ public class Table {
     public void commit_Table() throws Exception{
         boolean tree= new File(_Dir+_Schema+"/"+_Table+".tree").delete(); 
         boolean table= new File(_Dir+_Schema+"/"+_Table+".table").delete(); 
+        
         BplusTree myTree = hBplusTree.Initialize(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table",6);
         int Index_PK= get_Index(_PK);
@@ -79,7 +91,9 @@ public class Table {
                     tmp=tmp+_Values.get(i).get(j)+",";
                 }
             }
-            myTree.set(String.valueOf(_Values.get(i).get(Index_PK)), tmp);
+            
+            
+            myTree.Set(String.valueOf(_Values.get(i).get(Index_PK)), tmp);
             
         }
         myTree.Commit();
@@ -120,8 +134,9 @@ public class Table {
      * @param pList
      */
         
-   public void add(List<String> pList){
+   public void add(List<String> pList) throws Exception{
        _Values.add(pList);
+       
        
    } 
    
@@ -429,10 +444,14 @@ public class Table {
      *
      * @param pColumns
      */
-    public void setColumns(String pColumns){
-       List<String> myList = new ArrayList<String>(Arrays.asList(pColumns.split(",")));
-       this._Columns= myList;
+    public void setColumns(List<String> pColumns){
+       
+       this._Columns= pColumns;
    }
+    
+    public List<String> getColumns(){
+        return _Columns;
+    }
 
     /**
      *
@@ -441,4 +460,8 @@ public class Table {
     public void set_PK(String pPK){
        _PK=pPK;
    }
+    
+    public String getPK(){
+        return _PK;
+    }
 }

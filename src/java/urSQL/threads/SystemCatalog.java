@@ -21,9 +21,9 @@ public class SystemCatalog implements Callable{
     private final String _TSchema= "Sys_Schemas";
     private final String _TTable= "Sys_Tables";
     private final String _TColumn= "Sys_Columns";
-    private String _Columns_Schema;
-    private String _Columns_Tables;
-    private String _Columns_Columns;
+    private List<String> _Columns_Schema;
+    private List<String> _Columns_Tables;
+    private List<String> _Columns_Columns;
     private Table _Table_Schemas;
     private Table _Table_Tables;
     private Table _Table_Columns;
@@ -133,10 +133,19 @@ public class SystemCatalog implements Callable{
         _Table_Columns.commit_Table();
     }
     private void setColumns(){
-        _Columns_Schema= "Schema";
-        _Columns_Tables= "Schema,Table";
-        _Columns_Columns= "Schema,Table,Column,PK,Modifider,Type,Order";
-        
+        _Columns_Schema= new ArrayList<String>();
+        _Columns_Schema.add("Schema");
+        _Columns_Tables= new ArrayList<String>();
+        _Columns_Tables.add("Schema");
+        _Columns_Tables.add("Table");
+        _Columns_Columns= new ArrayList<String>();
+        _Columns_Columns.add("Schema");
+        _Columns_Columns.add("Table");
+        _Columns_Columns.add("Column");
+        _Columns_Columns.add("PK");
+        _Columns_Columns.add("Modifider");
+        _Columns_Columns.add("Type");
+        _Columns_Columns.add("Order");
     }
     
     
@@ -252,6 +261,7 @@ public class SystemCatalog implements Callable{
      * @throws Exception
      */
     public void insert_Table(String pSchema,String pTable) throws Exception{
+        
         List<String> Tmp = new ArrayList<String>();
         Tmp.add(pSchema);
         Tmp.add(pTable);
@@ -274,6 +284,7 @@ public class SystemCatalog implements Callable{
     public void insert_Column(String pSchema,String pTable,String pColumn,String pPK,
             String pModifider,String pType,String pOrder ) throws Exception{
         List<String> Tmp = new ArrayList<String>();
+        
         Tmp.add(pSchema);
         Tmp.add(pTable);
         Tmp.add(pColumn);
@@ -345,6 +356,7 @@ public class SystemCatalog implements Callable{
      * @throws Exception
      */
         public void elim_Schema() throws Exception{
+        
         Condition A= new Condition("Schema",null,_Schema,"=");
         List<Condition> X= new ArrayList<Condition>();
         X.add(A);
@@ -360,71 +372,93 @@ public class SystemCatalog implements Callable{
      *
      * @throws Exception
      */
-    public void elim_Table() throws Exception{
-        Condition A= new Condition("Table",null,_Table,"=");
+    public void elim_Table(String pSchema, String pTable) throws Exception{
+        System.out.println("entre");
+        Condition A= new Condition("Table",null,pTable,"=");
+        Condition B= new Condition("Schema",null,pSchema,"=");
         List<Condition> X= new ArrayList<Condition>();
-        X.add(A);
+        X.add(B);
+        
+        
         _Table_Tables.borrar_fila(X);
         _Table_Tables.commit_Table();
         _Table_Columns.borrar_fila(X);
         _Table_Columns.commit_Table();
     }
     
+    
+    public void set_PK(String pSchema,String pTable,String pColumn) throws Exception{
+        Condition A = new Condition("Schema", null,pSchema,"=");
+        Condition B = new Condition("Table", null,pTable,"=");
+        Condition C = new Condition("Column", null,pColumn,"=");
+        List<Condition> TCond = new ArrayList<Condition>();
+        TCond.add(A);
+        TCond.add(B);
+        TCond.add(C);
+        _Table_Columns.act_fila(TCond, "PK", "true");
+        _Table_Columns.commit_Table();
+    }
+    
     @Override
     public String call() throws InterruptedException, Exception {
 
-        String Result="";
+        String Result="false";
        
-        
-        
+        System.out.println("jsdhhsdjjsh");
+            
             if (_Mode.equals("V_TY")){
                 Result = verify_Column_Type(_Schema,_Table, _Column);
             }
-            if (_Mode.equals("V_PK")){
+            else if (_Mode.equals("V_PK")){
                 Result = Boolean.toString(verify_Pk(_Schema,_Table,_Column));
             }
                 
-            if (_Mode.equals("V_S")){
+            else if (_Mode.equals("V_S")){
                 Result = Boolean.toString(verify_Schema(_Schema));
             }
                 
-            if (_Mode.equals("V_T")){
+            else if (_Mode.equals("V_T")){
                Result = Boolean.toString(verify_Table(_Schema,_Table)); 
             }
                 
-            if (_Mode.equals("V_C")){
+            else if (_Mode.equals("V_C")){
                 Result = Boolean.toString(verify_Column(_Schema,_Table,_Column));
             }
                 
-            if (_Mode.equals("V_M")){
+            else if (_Mode.equals("V_M")){
                Result = Boolean.toString(verify_Column_Modifider(_Schema,_Table,_Column)); 
             }
                 
-            if (_Mode.equals("I_S")){
-                
+            else if (_Mode.equals("I_S")){
+                System.out.println("jsdhhsdjjsh");
                 insert_Schema(_Schema);
                 Result= "true";
             }
-            if (_Mode.equals("I_T")){
+            else if (_Mode.equals("I_T")){
                 insert_Table(_Schema,_Table);
                 Result= "true";
             }
-            if (_Mode.equals("I_C")){
+            else if (_Mode.equals("I_C")){
                 insert_Column(_Schema,_Table,_Column,_PK,_Modifider,_Type,_Order);
                 Result= "true";
             }               
-            if (_Mode.equals("R_C")){
+            else if (_Mode.equals("R_C")){
                 Result = re_Columns(_Schema,_Table);
             }       
-            if (_Mode.equals("R_PK")){
+            else if (_Mode.equals("R_PK")){
                 Result = re_PK(_Schema,_Table);
             } 
-             if (_Mode.equals("E_S")){
+            else if (_Mode.equals("E_S")){
+                
                 elim_Schema();
                 Result= "true";
             }       
-            if (_Mode.equals("E_T")){
-                elim_Table();
+            else if (_Mode.equals("E_T")){
+                elim_Table(_Schema,_Table);
+                Result= "true";
+            }
+            else if (_Mode.equals("S_PK")){
+                set_PK(_Schema,_Table,_Column);
                 Result= "true";
             } 
         
@@ -439,8 +473,14 @@ public class SystemCatalog implements Callable{
         local = local_query;
     }
     
-
-    
-    
+    public Table getDBS(){
+        return _Table_Columns;
+    }
+    public Table getDBD(){
+        return _Table_Schemas;
+    }
+    public Table getDBF(){
+        return _Table_Tables;
+    }
     
 }

@@ -20,16 +20,21 @@ import urSQL.logica.logHandler;
  */
 public class RuntimeDBProcessor implements Callable {
     
-           
+    String Query ="";
     RuntimeDBProcessor() throws Exception{
         
     }
  
+    public void set_Query(String pQuery){
+        Query = pQuery;
+    }
+    
     @Override
     public String call() throws Exception {
- 
-       
-        return "hola";
+        
+        boolean tmp = Parse(Query);
+        System.out.println(tmp);
+        return Boolean.toString(tmp);
     }
    
  
@@ -62,6 +67,7 @@ public class RuntimeDBProcessor implements Callable {
             net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuery);
             //net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse("select *");
             //System.out.println(parse.toString());
+            
             return createPlan(parse.toString());//crea el plan de ejecucion
         }
         catch (JSQLParserException ex) {
@@ -70,7 +76,7 @@ public class RuntimeDBProcessor implements Callable {
             }
             else{
                 String msj = ex.getCause().toString();
-                System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
+                //System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
                 return false;
             }
             
@@ -110,9 +116,10 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     }
    
     private boolean SecondTry(String pQuery){
+        
         boolean valido=false;
         String tmp = elimSpaces(pQuery);
-        if(tmp.substring(0,16).toUpperCase().compareTo("CREATE DATABASE ")==0){
+        if(tmp.length()>16 && tmp.substring(0,16).toUpperCase().compareTo("CREATE DATABASE ")==0){
             valido=true;
         }
         if(tmp.toUpperCase().compareTo("LIST DATABASES")==0){
@@ -127,7 +134,10 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         if(tmp.toUpperCase().compareTo("STOP")==0){
             valido=true;
         }
-        if(tmp.substring(0,17).toUpperCase().compareTo("DISPLAY DATABASE ")==0){
+        if(tmp.length()>17 && tmp.substring(0,17).toUpperCase().compareTo("DISPLAY DATABASE ")==0){
+            valido=true;
+        }
+        if (tmp.length()>13 && tmp.substring(0,13).toUpperCase().compareTo("SET DATABASE ")==0){
             valido=true;
         }
         
@@ -225,18 +235,19 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     }
    
    
-    private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, ExecutionException{
+private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, ExecutionException{
         int i =pi;
-        _Plan+="JOIN";
+        String tmp="JOIN";
         while(i<=pj){
             String tabla = _Query[i];
-            ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
+            ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
             ThreadManager._Pool.execute(ThreadManager.futureSystem);
             ThreadManager.waitSC();
             String Resp= (String) ThreadManager.futureSystem.get();
  
             if(Resp.compareTo("true")==0){
-                _Plan+="~"+tabla;
+                _Plan+="OPEN_TABLE~"+tabla+"\n";
+                tmp+="~"+tabla;
                 i+=2;
             }
             else{
@@ -244,7 +255,8 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
                 return false;
             }
         }
-        _Plan+="\n";
+        
+        _Plan+=tmp+"\n";
         return true;
     }
    
@@ -255,7 +267,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         while(i<pj){
             columna=_Query[i];
            
-            ThreadManager._SYCT.set_Plan(null, pTabla, columna, null, null, null, null, "V_T");
+            ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, pTabla, columna, null, null, null, null, "V_C");
             ThreadManager._Pool.execute(ThreadManager.futureSystem);
             ThreadManager.waitSC();
             String Resp= (String) ThreadManager.futureSystem.get();
@@ -293,7 +305,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
                     //ignora los parantesis y los operadores and y or
                     columna=token;
                     //validar que exista la columna en pTabla
-                    ThreadManager._SYCT.set_Plan(null, pTabla, columna, null, null, null, null, "V_T");
+                    ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, pTabla, columna, null, null, null, null, "V_C");
                     ThreadManager._Pool.execute(ThreadManager.futureSystem);
                     ThreadManager.waitSC();
                     String Resp= (String) ThreadManager.futureSystem.get();
@@ -358,12 +370,12 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     private boolean createPlan_Drop_DB() throws InterruptedException, ExecutionException{
         int indice = 2;
         String nombre = _Query[indice];
-       
-        ThreadManager._SYCT.set_Plan(nombre, null, null, null, null, null, null, "V_T");
+        
+        ThreadManager._SYCT.set_Plan(nombre, null, null, null, null, null, null, "V_S");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
         String Resp= (String) ThreadManager.futureSystem.get();
-       
+        
         if(Resp.compareTo("true")==0){
             _Plan += "DELETE_DB~"+nombre;
             return true;
@@ -374,7 +386,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     }
    
     private boolean createPlan_List_DB(){
-        _Plan += "List_DB";
+        _Plan += "LIST_DB";
         return true;
     }
    
@@ -413,11 +425,23 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
    
     //DDL Commands
     //**************************************************************************
-    private boolean createPlan_Set_DB(){
+    private boolean createPlan_Set_DB() throws InterruptedException, ExecutionException{
+        
         int indice = 2;
         String nombre = _Query[indice];
-        _Plan += "Set_DB~"+nombre;
+        
+        ThreadManager._SYCT.set_Plan(nombre, null, null, null, null, null, null,"V_S");
+        ThreadManager._Pool.execute(ThreadManager.futureSystem);
+        ThreadManager.waitSC();
+        String Resp= (String) ThreadManager.futureSystem.get();
+       
+        if(Resp.compareTo("true")==0){
+        _Plan += "SET_DB~"+nombre;
         return true;
+        }
+        else{
+            return false;
+        }
     }
     private boolean createPlan_Create_Table(){
         int indice = 2;
@@ -497,7 +521,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         int indice = 2;
         String tabla = _Query[indice];
        
-        ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
+        ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
         String Resp= (String) ThreadManager.futureSystem.get();
@@ -517,7 +541,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         String nombre = _Query[2];
         String tabla = _Query[4];
        
-        ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
+        ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
         String Resp= (String) ThreadManager.futureSystem.get();
@@ -540,7 +564,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
    
     //DML Commands
     //**************************************************************************
-    private boolean createPlan_Select() throws InterruptedException, ExecutionException{
+private boolean createPlan_Select() throws InterruptedException, ExecutionException{
         int indice = findInQuery("FROM")+1;
         String tabla = _Query[indice];
        
@@ -548,101 +572,134 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         int indiceGroup=findInQuery("GROUP");
         int indiceFor=findInQuery("FOR");
         int indiceJoin =findInQuery("JOIN");
-       
+       boolean flag=true;
         if(indiceJoin!=-1){//select con join
             if(indiceWhere!=-1){
-               checkJoinStatement(indiceJoin-1,indiceWhere-1);
+               flag=checkJoinStatement(indiceJoin-1,indiceWhere-1);
             }  
             else if(indiceGroup!=-1){
-                checkJoinStatement(indiceJoin-1,indiceGroup-1);
+                flag=checkJoinStatement(indiceJoin-1,indiceGroup-1);
             }
             else if(indiceFor!=-1){
-                checkJoinStatement(indiceJoin-1,indiceFor-1);
+                flag=checkJoinStatement(indiceJoin-1,indiceFor-1);
             }
             else{
-                checkJoinStatement(indiceJoin-1,_Query.length-1);
+                flag=checkJoinStatement(indiceJoin-1,_Query.length-1);
             }
-            
-            return true;
            
         }
-        else{
+        if(!flag){
+            return false;
+        }
+        if(indiceJoin==-1){//select con una tabla
            
-            ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
+            ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
             ThreadManager._Pool.execute(ThreadManager.futureSystem);
             ThreadManager.waitSC();
             String Resp= (String) ThreadManager.futureSystem.get();
-            int valido=-1;
  
             if(Resp.compareTo("true")==0){
-                valido =0;
+                flag=true;
                 _Plan += "OPEN_TABLE~"+tabla+"\n";
                 indice++;
-                if(indiceWhere!=-1){//select con where
-                    int indice2;
-                    if(indiceGroup!=-1){
-                        indice2=indiceGroup;
-                        if(checkWhereStatement(indiceWhere+1,indice2,tabla)){
-                            valido=1;
-                        }
-                    }
-                    else if(indiceFor!=-1){
-                        indice2=indiceFor;
-                        if(checkWhereStatement(indiceWhere+1,indice2,tabla)){
-                            valido=1;
-                        }
-                    }
-                    else{
-                        indice2=_Query.length;
-                        if(checkWhereStatement(indiceWhere+1,indice2,tabla)){
-                            valido=1;
-                        }
-                    }
-                    
-                }
-                if(indiceGroup!=-1){//select con group by
-                    _Plan += "GROUP_BY";
-                    int fin;
-                    if(indiceFor!=-1){
-                        fin=indiceFor;
-                    }
-                    else{
-                        fin=_Query.length-1;
-                    }
-                    indiceGroup+=2;
-                    while(indiceGroup<=fin){
-                        _Plan +="~"+_Query[indiceGroup];
-                        indiceGroup+=2;//se salta la coma
-                    }
-                    _Plan += "\n";
- 
-                }
-                if(indiceFor!=-1){//select con for json/xml
-                    if(findInQuery("JSON")!=-1){
-                        _Plan += "FOR_JSON\n";
-                    }
-                    else{
-                        _Plan += "FOR_XML\n";
-                    }
-                }
-                
-                //seleccionar columnas
-                return valido==-1 || valido ==1;
             }
             else{
                 return false;
             }
- 
+        }
+        if(indiceWhere!=-1 && flag){//select con where
+            int indice2;
+            if(indiceGroup!=-1){
+                indice2=indiceGroup;
+                if(!checkWhereStatement(indiceWhere+1,indice2,tabla)){
+                    return false;
+                }
+            }
+            else if(indiceFor!=-1){
+                indice2=indiceFor;
+                if(!checkWhereStatement(indiceWhere+1,indice2,tabla)){
+                    return false;
+                }
+            }
+            else{
+                indice2=_Query.length;
+                if(!checkWhereStatement(indiceWhere+1,indice2,tabla)){
+                    return false;
+                }
+            }
+
+        }
+        if(indiceGroup!=-1 && flag){//select con group by
+            _Plan += "GROUP_BY";
+            int fin;
+            if(indiceFor!=-1){
+                fin=indiceFor;
+            }
+            else{
+                fin=_Query.length-1;
+            }
+            indiceGroup+=2;
+            while(indiceGroup<=fin){
+                String columna = _Query[indiceGroup];
+                ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, columna, null, null, null, null, "V_C");
+                ThreadManager._Pool.execute(ThreadManager.futureSystem);
+                ThreadManager.waitSC();
+                String Resp= (String) ThreadManager.futureSystem.get();
+
+                if(Resp.compareTo("true")==0){
+                        _Plan +="~"+columna;
+                        indiceGroup+=2;//se salta la coma
+                }
+                else{
+                    return false;
+                }
+            
+            }
+            _Plan += "\n";
+
+        }
+        if(indiceFor!=-1 && flag){//select con for json/xml
+            if(findInQuery("JSON")!=-1){
+                _Plan += "FOR_JSON\n";
+            }
+            else{
+                _Plan += "FOR_XML\n";
+            }
+        }
+
+        String columna;
+        String tmp="";
+        for(int i=1;i<indice;i+=2){
+            columna = _Query[i];
+            if(i==1 && columna.compareTo("*")==0){
+                break;
+            }
+            //validar q exista columna
+            ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, columna, null, null, null, null, "V_C");
+            ThreadManager._Pool.execute(ThreadManager.futureSystem);
+            ThreadManager.waitSC();
+            String Resp= (String) ThreadManager.futureSystem.get();
+
+            if(Resp.compareTo("true")==0){
+                tmp +="~"+columna;
+            }
+            else{
+                return false;
+            }
             
         }
-       
+        if(tmp.compareTo("")!=0){
+            _Plan+="SELECT"+tmp;
+        }
+
+        return true;    
     }
    
     private boolean createPlan_Update() throws InterruptedException, ExecutionException{
         int indice = 1;
         String tabla = _Query[indice];
        
-        ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
+        ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
         String Resp= (String) ThreadManager.futureSystem.get();
@@ -680,7 +737,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         int indice = 2;
         String tabla = _Query[indice];
        
-        ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
+        ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
         String Resp= (String) ThreadManager.futureSystem.get();
@@ -713,7 +770,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         int indice = 2;//se salta las posiciones de insert into
         String tabla = _Query[indice];
        
-        ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
+        ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
         String Resp= (String) ThreadManager.futureSystem.get();
@@ -819,7 +876,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             }
         }
         if(valido){
-            System.out.println(_Plan);
+            
             logHandler.getInstance().logExecution_Plan(_Plan);
              //guardar la variable _Plan en un archivo
             return true;
