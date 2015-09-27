@@ -5,10 +5,13 @@
  */
 package urSQL.threads;
  
+import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import org.json.JSONException;
+import urSQL.logica.logHandler;
  
  
 /**
@@ -600,7 +603,7 @@ public class RuntimeDBProcessor implements Callable {
      * @throws java.util.concurrent.ExecutionException
      */
        
-    public void createPlan(String pQuery) throws InterruptedException, ExecutionException{
+    public void createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
         String tmp = adjustQuery(pQuery);
         _Query = tmp.split(" ");
         String comando = _Query[0].toUpperCase();
@@ -662,6 +665,7 @@ public class RuntimeDBProcessor implements Callable {
             }
         }
        System.out.println(_Plan);
+       logHandler.getInstance().logExecution_Plan(_Plan);
         //guardar la variable _Plan en un archivo
        
    
