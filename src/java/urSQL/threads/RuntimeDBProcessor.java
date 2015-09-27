@@ -57,20 +57,21 @@ public class RuntimeDBProcessor implements Callable {
      */
        
     
-    public void Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
+    public boolean Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
     try{
             net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuery);
             //net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse("select *");
             //System.out.println(parse.toString());
-            createPlan(parse.toString());//crea el plan de ejecucion
+            return createPlan(parse.toString());//crea el plan de ejecucion
         }
         catch (JSQLParserException ex) {
             if(SecondTry(pQuery)){
-                createPlan(elimSpaces(pQuery));
+                return createPlan(elimSpaces(pQuery));
             }
             else{
                 String msj = ex.getCause().toString();
                 System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
+                return false;
             }
             
             //ver si es un clp o alter
@@ -224,7 +225,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     }
    
    
-    private void checkJoinStatement(int pi,int pj) throws InterruptedException, ExecutionException{
+    private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, ExecutionException{
         int i =pi;
         _Plan+="JOIN";
         while(i<=pj){
@@ -240,13 +241,14 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             }
             else{
                 //error no existe tabla
-                break;
+                return false;
             }
         }
         _Plan+="\n";
+        return true;
     }
    
-    private void checkSetStatement(int pi,int pj,String pTabla) throws InterruptedException, ExecutionException{
+    private boolean checkSetStatement(int pi,int pj,String pTabla) throws InterruptedException, ExecutionException{
         int i=pi;
         String columna;
         String value;
@@ -269,12 +271,13 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             }
             else{
                 //error no existe columna
-                break;
+                return false;
             }
         }
+        return true;
     }
    
-    private void checkWhereStatement(int pi,int pj,String pTabla) throws InterruptedException, ExecutionException{
+    private boolean checkWhereStatement(int pi,int pj,String pTabla) throws InterruptedException, ExecutionException{
         int i=pi;
         int estado=0;
         String columna="";
@@ -299,8 +302,8 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
                         estado=1;
                     }
                     else{
-                        //errorno existe columna
-                        break;
+                        //error no existe columna
+                        return false;
                     }
                 }
                
@@ -336,6 +339,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             i++;
         }
         _Plan+="~"+operador+"\n";
+        return true;
        
     }
     //**************************************************************************
@@ -344,13 +348,14 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
    
     //CLP Commands
     //**************************************************************************
-    private void createPlan_Create_DB(){
+    private boolean createPlan_Create_DB(){
         int indice = 2;
         String nombre = _Query[indice];
         _Plan += "CREATE_DB~"+nombre;
+        return true;
     }
    
-    private void createPlan_Drop_DB() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Drop_DB() throws InterruptedException, ExecutionException{
         int indice = 2;
         String nombre = _Query[indice];
        
@@ -361,23 +366,31 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
        
         if(Resp.compareTo("true")==0){
             _Plan += "DELETE_DB~"+nombre;
+            return true;
+        }
+        else{
+            return false;
         }
     }
    
-    private void createPlan_List_DB(){
+    private boolean createPlan_List_DB(){
         _Plan += "List_DB";
+        return true;
     }
    
-    private void createPlan_Start(){
+    private boolean createPlan_Start(){
         //?
+        return true;
     }
-    private void createPlan_Stop(){
+    private boolean createPlan_Stop(){
         //?
+        return true;
     }
-    private void createPlan_Get_Status(){
+    private boolean createPlan_Get_Status(){
         //?
+        return true;
     }
-    private void createPlan_Display_DB() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Display_DB() throws InterruptedException, ExecutionException{
         int indice = 2;
         String nombre = _Query[indice];
         ThreadManager._SYCT.set_Plan(nombre, null, null, null, null, null, null, "V_S");
@@ -387,9 +400,11 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
        
         if(Resp.compareTo("true")==0){
             _Plan += "DISPLAY_DB~"+nombre;
+            return true;
         }
         else{
             //no existe esquema
+            return false;
         }
     }
    
@@ -398,13 +413,13 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
    
     //DDL Commands
     //**************************************************************************
-    private void createPlan_Set_DB(){
+    private boolean createPlan_Set_DB(){
         int indice = 2;
         String nombre = _Query[indice];
         _Plan += "Set_DB~"+nombre;
-        //asignarla a una variable?
+        return true;
     }
-    private void createPlan_Create_Table(){
+    private boolean createPlan_Create_Table(){
         int indice = 2;
         String tabla = _Query[indice];
         _Plan += "CREATE_TABLE~"+tabla+"\n";
@@ -448,6 +463,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             indice++;
            
         }
+        return true; //tabla duplicada?
        
        
        
@@ -458,7 +474,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
        
     }
    
-    private void createPlan_Alter_Table() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Alter_Table() throws InterruptedException, ExecutionException{
         int indice = 2;
         String tabla = _Query[indice];
        
@@ -469,13 +485,15 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
        
         if(Resp.compareTo("true")==0){
             _Plan += "OPEN_TABLE~"+tabla+" WRITE\n";
+            return true;
         }
         else{
             //error no existe tabla
+            return false;
         }
     }
    
-    private void createPlan_Drop_Table() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Drop_Table() throws InterruptedException, ExecutionException{
         int indice = 2;
         String tabla = _Query[indice];
        
@@ -487,13 +505,15 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         if(Resp.compareTo("true")==0){
        
             _Plan += "DELETE_TABLE~"+tabla;
+            return true;
         }
         else{
             //error no existe tabla
+            return false;
         }
     }
    
-    private void createPlan_Create_Index() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Create_Index() throws InterruptedException, ExecutionException{
         String nombre = _Query[2];
         String tabla = _Query[4];
        
@@ -507,9 +527,11 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
                 String columna = _Query[6];
                 _Plan += "OPEN_TABLE~"+tabla+"\n";
                 _Plan += "CREATE_INDEX~"+nombre+"~"+columna;
+                return true;
             }
             else{
                 //no existe tabla
+                return false;
             }
     }
    
@@ -518,7 +540,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
    
     //DML Commands
     //**************************************************************************
-    private void createPlan_Select() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Select() throws InterruptedException, ExecutionException{
         int indice = findInQuery("FROM")+1;
         String tabla = _Query[indice];
        
@@ -540,6 +562,8 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             else{
                 checkJoinStatement(indiceJoin-1,_Query.length-1);
             }
+            
+            return true;
            
         }
         else{
@@ -548,23 +572,33 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             ThreadManager._Pool.execute(ThreadManager.futureSystem);
             ThreadManager.waitSC();
             String Resp= (String) ThreadManager.futureSystem.get();
+            int valido=-1;
  
             if(Resp.compareTo("true")==0){
-           
+                valido =0;
                 _Plan += "OPEN_TABLE~"+tabla+"\n";
                 indice++;
                 if(indiceWhere!=-1){//select con where
                     int indice2;
                     if(indiceGroup!=-1){
                         indice2=indiceGroup;
+                        if(checkWhereStatement(indiceWhere+1,indice2,tabla)){
+                            valido=1;
+                        }
                     }
                     else if(indiceFor!=-1){
                         indice2=indiceFor;
+                        if(checkWhereStatement(indiceWhere+1,indice2,tabla)){
+                            valido=1;
+                        }
                     }
                     else{
                         indice2=_Query.length;
+                        if(checkWhereStatement(indiceWhere+1,indice2,tabla)){
+                            valido=1;
+                        }
                     }
-                    checkWhereStatement(indiceWhere+1,indice2,tabla);
+                    
                 }
                 if(indiceGroup!=-1){//select con group by
                     _Plan += "GROUP_BY";
@@ -591,14 +625,20 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
                         _Plan += "FOR_XML\n";
                     }
                 }
+                
+                //seleccionar columnas
+                return valido==-1 || valido ==1;
+            }
+            else{
+                return false;
             }
  
-            //seleccionar columnas
+            
         }
        
     }
    
-    private void createPlan_Update() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Update() throws InterruptedException, ExecutionException{
         int indice = 1;
         String tabla = _Query[indice];
        
@@ -613,19 +653,30 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
  
             if(findInQuery("WHERE")!=-1){//select con where
                     int indice2=_Query.length;
-                    checkWhereStatement(findInQuery("WHERE")+1,indice2,tabla);
-                    checkSetStatement(findInQuery("SET")+1,findInQuery("WHERE"),tabla);
+                    if(checkWhereStatement(findInQuery("WHERE")+1,indice2,tabla) 
+                            && checkSetStatement(findInQuery("SET")+1,findInQuery("WHERE"),tabla)){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
                 }
             else{//select sin where
-                checkSetStatement(findInQuery("SET")+1,_Query.length,tabla);
+                if(checkSetStatement(findInQuery("SET")+1,_Query.length,tabla)){
+                    return true;
+                }
+                else{
+                    return false;
+                }
             }
         }
         else{
             //error no existe la tabla
+            return false;
         }
     }  
    
-    private void createPlan_Delete() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Delete() throws InterruptedException, ExecutionException{
         int indice = 2;
         String tabla = _Query[indice];
        
@@ -639,19 +690,26 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
  
             if(findInQuery("WHERE")!=-1){//select con where
                     int indice2=_Query.length;
-                    checkWhereStatement(findInQuery("WHERE")+1,indice2,tabla);
-                    _Plan+="DELETE";
+                    if(checkWhereStatement(findInQuery("WHERE")+1,indice2,tabla)){
+                        _Plan+="DELETE";
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
                 }
             else{
                 _Plan +="DELETE~ALL\n";
+                return true;
             }
         }
         else{
             //no existe la tabla
+            return false;
         }
     }  
    
-    private void createPlan_Insert() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Insert() throws InterruptedException, ExecutionException{
         int indice = 2;//se salta las posiciones de insert into
         String tabla = _Query[indice];
        
@@ -668,18 +726,20 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
             _Plan+="INSERT";
  
             if((indice2-4-indice)==(_Query.length-2-indice2)){
- 
                 //VALIDAR QUE INCLUYA VALOR UNICO PARA LLAVE PRIMARIA
                 //VALIDAR QUE COLUMNAS FALTANTES AGUANTEN NULL
                 writeBlockOfQuery(indice,indice2-4);//toma hasta el cierre del parentesis de las columnas
                 writeBlockOfQuery(indice2,_Query.length-2);//el -2 es para excluir el parentesis derecho
+                return true;
  
             }
             else{
                 System.out.println("error cant de columnas != cant de valores");
+                return false;
             }
         }
         else{
+            return false;
             //tabla no existe
         }
     }
@@ -696,70 +756,77 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
      * @throws java.util.concurrent.ExecutionException
      */
        
-    public void createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
+    public boolean createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
         String tmp = adjustQuery(pQuery);
         _Query = tmp.split(" ");
         String comando = _Query[0].toUpperCase();
         String comando2 = _Query[1].toUpperCase();
+        boolean valido = false;
        
         if(comando.compareTo("SELECT")==0){
-            createPlan_Select();
+            valido = createPlan_Select();
         }
         if(comando.compareTo("UPDATE")==0){
-            createPlan_Update();
+            valido = createPlan_Update();
         }
         if(comando.compareTo("DELETE")==0){
-            createPlan_Delete();
+            valido = createPlan_Delete();
         }
         if(comando.compareTo("INSERT")==0){
-            createPlan_Insert();
+            valido = createPlan_Insert();
         }
         if(comando.compareTo("LIST")==0){//list database
-            createPlan_List_DB();
+            valido = createPlan_List_DB();
         }
         if(comando.compareTo("START")==0){
-            createPlan_Start();
+            valido = createPlan_Start();
         }
         if(comando.compareTo("STOP")==0){
-            createPlan_Stop();
+            valido = createPlan_Stop();
         }
         if(comando.compareTo("GET")==0){//get status
-            createPlan_Get_Status();
+            valido = createPlan_Get_Status();
         }
         if(comando.compareTo("DISPLAY")==0){//display database
-            createPlan_Display_DB();
+            valido = createPlan_Display_DB();
         }
         if(comando.compareTo("SET")==0){//set database
-            createPlan_Set_DB();
+            valido = createPlan_Set_DB();
         }
         if(comando.compareTo("ALTER")==0){//alter table
-            createPlan_Alter_Table();
+            valido = createPlan_Alter_Table();
         }
        
         if(comando.compareTo("CREATE")==0){
            
             if(comando2.compareTo("DATABASE")==0){
-                createPlan_Create_DB();
+                valido = createPlan_Create_DB();
             }
             if(comando2.compareTo("TABLE")==0){
-            createPlan_Create_Table();
+                valido = createPlan_Create_Table();
             }
             if(comando2.compareTo("INDEX")==0){
-                createPlan_Create_Index();
+                valido = createPlan_Create_Index();
             }
         }
        
         if(comando.compareTo("DROP")==0){
             if(comando2.compareTo("DATABASE")==0){
-                createPlan_Drop_DB();
+                valido = createPlan_Drop_DB();
             }
             if(comando2.compareTo("TABLE")==0){
-                createPlan_Drop_Table();
+                valido = createPlan_Drop_Table();
             }
         }
-       System.out.println(_Plan);
-       logHandler.getInstance().logExecution_Plan(_Plan);
-        //guardar la variable _Plan en un archivo
+        if(valido){
+            System.out.println(_Plan);
+            logHandler.getInstance().logExecution_Plan(_Plan);
+             //guardar la variable _Plan en un archivo
+            return true;
+        }
+        else{
+            return false;
+        }
        
    
     }
