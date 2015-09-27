@@ -21,9 +21,9 @@ public class SystemCatalog implements Callable{
     private final String _TSchema= "Sys_Schemas";
     private final String _TTable= "Sys_Tables";
     private final String _TColumn= "Sys_Columns";
-    private List<String> _Columns_Schema;
-    private List<String> _Columns_Tables;
-    private List<String> _Columns_Columns;
+    private String _Columns_Schema;
+    private String _Columns_Tables;
+    private String _Columns_Columns;
     private Table _Table_Schemas;
     private Table _Table_Tables;
     private Table _Table_Columns;
@@ -133,19 +133,10 @@ public class SystemCatalog implements Callable{
         _Table_Columns.commit_Table();
     }
     private void setColumns(){
-        _Columns_Schema= new ArrayList<String>();
-        _Columns_Tables= new ArrayList<String>();
-        _Columns_Columns= new ArrayList<String>();
-        _Columns_Schema.add("Schema");
-        _Columns_Tables.add("Schema");
-        _Columns_Tables.add("Table");
-        _Columns_Columns.add("Schema");
-        _Columns_Columns.add("Table");
-        _Columns_Columns.add("Column");
-        _Columns_Columns.add("PK");
-        _Columns_Columns.add("Modifider");
-        _Columns_Columns.add("Type");
-        _Columns_Columns.add("Order");
+        _Columns_Schema= "Schema";
+        _Columns_Tables= "Schema,Table";
+        _Columns_Columns= "Schema,Table,Column,PK,Modifider,Type,Order";
+        
     }
     
     

@@ -24,6 +24,7 @@ public class Table {
     private String _PK="";
     private String _Schema;
     private String _Table;
+   
 
     
     
@@ -428,8 +429,9 @@ public class Table {
      *
      * @param pColumns
      */
-    public void setColumns(List<String> pColumns){
-       this._Columns= pColumns;
+    public void setColumns(String pColumns){
+       List<String> myList = new ArrayList<String>(Arrays.asList(pColumns.split(",")));
+       this._Columns= myList;
    }
 
     /**
