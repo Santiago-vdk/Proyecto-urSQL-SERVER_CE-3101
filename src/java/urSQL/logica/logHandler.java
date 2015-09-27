@@ -79,14 +79,14 @@ public class logHandler {
         /* Estructura interna del SQL
         -defaultServer
             -urSQL
-                -Databases
+                -DataBases
                     -db1
                         *db1_files
                     -db2
                         *db2_files
                     -db3
                         *db3_files
-                -System_catalog
+                -System_Catalog
                     *Execution_Plan.txt
                 -Log
                     *log.txt
@@ -95,13 +95,13 @@ public class logHandler {
         String urSQLPath = pPath + "/urSQL";
         
         //Check databases
-        File db_root_folder = new File(urSQLPath + "/Databases");
+        File db_root_folder = new File(urSQLPath + "/DataBases");
         if(!db_root_folder.exists()){
             db_root_folder.mkdirs();
         }
         
         //Check sys_catalog
-        File syscatalog_root_folder = new File(urSQLPath + "/System_catalog");
+        File syscatalog_root_folder = new File(urSQLPath + "/DataBases/System_Catalog");
         if(!syscatalog_root_folder.exists()){
             syscatalog_root_folder.mkdirs();
         }
@@ -122,7 +122,7 @@ public class logHandler {
      * @throws JSONException
      */
     public void logExecution_Plan(String pExecutionPlan) throws IOException, JSONException {
-        File fileDir = new File(_rootDir + "/urSQL/System_catalog/Execution_Plan.txt");
+        File fileDir = new File(_rootDir + "/urSQL//DataBases/System_Catalog/Execution_Plan.txt");
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, false)));       
         String[] string_arr = pExecutionPlan.split("\n");
         for(int i =0; i < string_arr.length; i++){
@@ -164,7 +164,7 @@ public class logHandler {
      */
     public String getExecutionPlan() throws JSONException, FileNotFoundException {
         
-        InputStream inputstream = new FileInputStream(_rootDir + "/urSQL/System_catalog/Execution_Plan.txt");
+        InputStream inputstream = new FileInputStream(_rootDir + "/urSQL//DataBases/System_Catalog/Execution_Plan.txt");
         String execution_plan = readStream(inputstream);
 
         JSONObject object = new JSONObject();

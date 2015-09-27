@@ -23,6 +23,7 @@ import javax.ws.rs.Produces;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import urSQL.logica.Facade;
 import urSQL.logica.logHandler;
 import urSQL.threads.ThreadManager;
 
@@ -249,10 +250,10 @@ public class WebAppResource {
     @Path("/test")
     @Produces("application/json")
     public String test() throws JSONException, Exception {
-        ThreadManager th = new ThreadManager();
-        th.iniciar_Directorios();
+        Facade facade = new Facade();
+        String t = facade.processQuerry("Start");
         
-        return "true";
+        return t;
     }
     
     
