@@ -82,7 +82,7 @@ public class ThreadManager {
             
         }
     }
-    public  void waitSC(){
+    public static void waitSC(){
         while(futureSystem.isDone()){
             
         }
