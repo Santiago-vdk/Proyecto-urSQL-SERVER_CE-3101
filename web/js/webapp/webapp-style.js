@@ -127,6 +127,8 @@ $(document).ready(function () {
             timer: 2000,
             showConfirmButton: false
         });
+        $('#button-start').prop("disabled", true);
+        serverVerify();
         sendQuery("START");
     });
 
@@ -150,7 +152,6 @@ $(document).ready(function () {
                     timer: 2000,
                     showConfirmButton: false
                 });
-                alert("gera");
                 sendQuery("START");
         } else {
                 swal("Cancelled", "you are safe :)", "error");
@@ -204,12 +205,11 @@ $(document).ready(function () {
     $('#button-statusdb').click(function (e) {
         e.stopPropagation();
         var statusJSON = getDBStatus();
-        bootbox.alert('<html><h1>Status DB</h1>');
     });
 
     $('#button-listdb').click(function (e) {
         e.stopPropagation();
-        bootbox.alert('<html><h1>DB LIST</h1>');
+        var databases = getDataBases();
     });
     
     
@@ -221,12 +221,42 @@ $(document).ready(function () {
     $('#button-refresh').click(function (e) {
         e.stopPropagation();
         refreshTree();
+        
     });
 
     $('#plan-log').click(function (e) {
         e.stopPropagation();
         //ExecuteGetExecutionPlan
-        bootbox.alert('<html><h1>Execution Plan</h1>');
+        var exec_plan = getExecPlan();
     });
-
 });
+
+
+function showStatus(RuntimeDBProcessor,SystemCatalog,StoredDataManager,StoredData) {
+    var message =  '<html><h2>System Components:</h2><ul>' ;
+    
+    message = message + '<li>RunTime DB Processor, '+ RuntimeDBProcessor + '</li>';
+    message = message + '<li>System Catalog, '+ SystemCatalog + '</li>';
+    message = message + '<li>Stored Data Manager, '+ StoredDataManager + '</li>';
+    message = message + '<li>Stored Data, '+ StoredData + '</li>';
+    
+    message = message + '</ul></html>';
+    bootbox.alert(message);
+}
+
+
+function showDataBases(databases){
+    //bootbox.alert('<html><h1>' + databases + '</h1>');
+    var message =  '<html><h2>Database List:</h2><ul>' ;
+    for(var i = 0; i < databases.length; i++){
+       message =  message  + '<li>' + databases[i] + '</li>';
+    }
+    message = message + '</ul></html>';
+    bootbox.alert(message);
+}
+
+
+
+function showExecPlan(exec_plan){
+    bootbox.alert('<html><h1>' + exec_plan + '</h1>');
+}

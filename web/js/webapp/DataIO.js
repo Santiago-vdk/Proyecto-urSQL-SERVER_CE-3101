@@ -35,23 +35,43 @@ function sendQuery(code) {
         },
         url: 'webresources/webapp/ExecuteQuery',
         dataType: 'json',
-        type: 'post',
+        type: 'post', 
         contentType: 'application/json',
         data: JSON.stringify({"source-code": code}),
         success: function (data, textStatus, jQxhr) {
             //updateTable(json_example);
+            //Actualizo tabla de informacion
+            
+            updateDataTable(data);
         },
         complete: function () {
             $('.progress').delay(1000).fadeOut('slow');
             $('#execute-query').removeClass("btn btn-sq-lg btn-warning").addClass("btn btn-sq-lg btn-success");
             $('#execute-query-icon').removeClass("fa fa-cog fa-spin").addClass("fa fa-check");
-            updateLog();
+            //updateLog();cambiaraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         },
         error: function (jqXhr, textStatus, errorThrown) {
             console.log(errorThrown);
         }
     });
 };
+
+
+
+function serverVerify(){
+    $.ajax({
+        url: 'webresources/webapp/initialSetup',
+        type: 'get',
+        contentType: 'application/json',
+        success: function (data, textStatus, jQxhr) {
+            console.log("urSQL Context Verified!");
+            
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+            console.log(errorThrown);
+        }
+    });
+}
 
 
 function updateLog(){
@@ -88,6 +108,51 @@ function updateTable(table) {
     oldTable.parentNode.replaceChild(newTable, oldTable);
 }
 
+
 function getDBStatus(){
-    
+    $.ajax({
+        url: 'webresources/webapp/data/status',
+        type: 'get',
+        contentType: 'application/json',
+        success: function (data, textStatus, jQxhr) {
+            console.log("executionPlan Found!");
+            showStatus(data.RuntimeDBProcessor,data.SystemCatalog,data.StoredDataManager,data.StoredData);
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+            console.log(errorThrown);
+        }
+    });
 }
+
+function getDataBases(){
+    $.ajax({
+        url: 'webresources/webapp/data/dataBases',
+        type: 'get',
+        contentType: 'application/json',
+        success: function (data, textStatus, jQxhr) {
+            console.log("executionPlan Found!");
+            showDataBases(data.schemas);
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+            console.log(errorThrown);
+        }
+    });
+}
+
+
+
+function getExecPlan(){
+    $.ajax({
+        url: 'webresources/webapp/data/executionPlan',
+        type: 'get',
+        contentType: 'application/json',
+        success: function (data, textStatus, jQxhr) {
+            console.log("executionPlan Found!");
+            showExecPlan(data.execplan);
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+            console.log(errorThrown);
+        }
+    });
+}
+

@@ -31,6 +31,7 @@ public class logHandler {
 
     private static logHandler _singleton = new logHandler();
     private String _execPlanDir = "C:\\tmp\\DataBases\\System_Catalog\\";
+    private String _rootDir = null;
 
     private logHandler() {
     }
@@ -64,8 +65,7 @@ public class logHandler {
      */
     public void logEvent(String pPath, boolean pError, String pAction, String pStatus, String pDuration) throws IOException, JSONException {
         //String path = pPath.substring(0, pPath.indexOf("build"));
-        
-        File fileDir = new File("/urSQL/Log/log.txt");
+        File fileDir = new File(_rootDir + "/urSQL/Log/log.txt");
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, true)));
         String timeStamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
         out.println(String.valueOf(pError) + "~" + timeStamp + "~" + "'" + pAction + "'" + "~" + pStatus + "~" + pDuration);
@@ -90,7 +90,7 @@ public class logHandler {
                 -Log
                     *log.txt
         */
-        
+        _rootDir = pPath;
         String urSQLPath = pPath + "/urSQL";
         
         //Check databases
@@ -100,16 +100,17 @@ public class logHandler {
         }
         
         //Check sys_catalog
-        File syscatalog_root_folder = new File(urSQLPath + "/System_catalog", "Execution_Plan.txt");
+        File syscatalog_root_folder = new File(urSQLPath + "/System_catalog");
         if(!syscatalog_root_folder.exists()){
             syscatalog_root_folder.mkdirs();
         }
         
         //Check log
-        File log_root_folder = new File(urSQLPath + "/Log", "log.txt");
+        File log_root_folder = new File(urSQLPath + "/Log");
         if(!log_root_folder.exists()){
             log_root_folder.mkdirs();
         }
+        
         
     }
     
@@ -120,9 +121,8 @@ public class logHandler {
      * @throws JSONException
      */
     public void logExecution_Plan(String pExecutionPlan) throws IOException, JSONException {
-        File fileDir = new File(_execPlanDir + "Execution_Plan.txt");
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, false)));
-        
+        File fileDir = new File(_rootDir + "/urSQL/System_catalog/Execution_Plan.txt");
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, false)));       
         String[] string_arr = pExecutionPlan.split("\n");
         for(int i =0; i < string_arr.length; i++){
             out.println(string_arr[i]);
@@ -138,7 +138,7 @@ public class logHandler {
      */
     public String getLastEventJSON(String pPath) throws JSONException {
         //String path = pPath.substring(0, pPath.indexOf("build"));
-        File fileDir = new File("log.txt");
+        File fileDir = new File(_rootDir + "/urSQL/Log/log.txt");
         String logMessage = tail(fileDir);
 
         String[] parameters = logMessage.split("~");
@@ -163,12 +163,12 @@ public class logHandler {
      */
     public String getExecutionPlan() throws JSONException, FileNotFoundException {
         
-        InputStream inputstream = new FileInputStream(_execPlanDir + "Execution_Plan.txt");
+        InputStream inputstream = new FileInputStream(_rootDir + "/urSQL/System_catalog/Execution_Plan.txt");
         String execution_plan = readStream(inputstream);
 
         JSONObject object = new JSONObject();
-        object.put("ExecPLan", execution_plan);
-        System.out.println(object.toString());
+        object.put("execplan", execution_plan);
+        //System.out.println(object.toString());
 
         return object.toString();
     }
@@ -240,4 +240,10 @@ public class logHandler {
             }
         }
     }
+    
+    
+    public String getRootPath(){
+        return _rootDir;
+    }
+    
 }

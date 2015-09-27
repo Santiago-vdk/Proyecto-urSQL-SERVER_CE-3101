@@ -1,13 +1,15 @@
 var logTabla;
-var dataTabla;
+var dataTabla =$('#data-table').DataTable({"bDestroy": true});
 var counter = 0;
+   var aryJSONColTable = [];
+       var arregloColumnas = [];
 $(document).ready(function () {
     /*$('#example').DataTable();
      $('#example')
      .removeClass('display')
      .addClass('table table-striped table-bordered');   */
-
-    $('#data-table').DataTable({
+/*
+   dataTabla = $('#data-table').DataTable({
         'bSort': false,
         "scrollY": "100%",
         "scrollCollapse": false,
@@ -16,7 +18,7 @@ $(document).ready(function () {
     
         "bAutoWidth": false
 
-    });
+    });*/
 
     logTabla = $('#log-tabla').DataTable({
          "order": [[ 3, "desc" ]],
@@ -41,6 +43,57 @@ $(document).ready(function () {
     });
 
 });
+
+function updateDataTable(data){
+    
+    //dataTabla.destroy();
+   
+    arregloColumnas = [];
+    aryJSONColTable = [];
+    
+    for(var i = 0; i < data.Columnas.length; i++){
+        arregloColumnas[i] = data.Columnas[i];
+    }
+
+
+    for (var i = 0; i < arregloColumnas.length; i++) {
+        aryJSONColTable.push({
+            "sTitle": arregloColumnas[i],
+            "aTargets": [i]
+        });
+    }
+    ;
+    
+    dataTabla.destroy();
+    $('#data-table').empty();
+        
+        
+    dataTabla = $('#data-table').DataTable({
+        "aoColumnDefs": aryJSONColTable,
+        "aaData":data.Valores,
+        "bProcessing": false,
+        "bLengthChange": true,
+        "bFilter": true,
+        "aaSorting": [[1, "desc"]],
+        "sScrollX": "100%",
+        "bScrollCollapse": true,
+        "bDestroy": true
+        
+    });
+  
+    
+    
+
+
+    /*
+    dataTabla.row.add({
+        "col1": "1",
+        "col2": "2",
+        "col3": "3"
+    }).draw(false);*/
+    
+    
+}
 
 function addRow(error, time, action, status, duration) {
     var pError;
