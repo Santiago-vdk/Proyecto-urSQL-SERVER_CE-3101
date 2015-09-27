@@ -35,5 +35,19 @@ public class Response {
     public Table getTabla(){
         return _Tabla;
     }
+
+    /**
+     * @return the _State
+     */
+    public String getState() {
+        return _State;
+    }
+
+    /**
+     * @param _State the _State to set
+     */
+    public void setState(String _State) {
+        this._State = _State;
+    }
     
 }
