@@ -114,7 +114,7 @@ public class ThreadManager {
         _RDBM.set_Query(pQuery);
         _Pool.execute(futureRDBM);
         waitRDBM();
-        if (futureRDBM.get().equals("true")){
+        if (futureRDBM.get().equals("")){
             System.out.println("Entre");
             _Pool.execute(ThreadManager.futureSTDM);
             waitSTDM();
