@@ -27,24 +27,17 @@ import urSQL.Objects.Table;
  * @author Shagy
  */
 public class StoredDataManager implements Callable{
-    private StoredData DataS;
-    private FutureTask _FutureStoredData;
-
+    
     
     private final String _ExecutionPlan = "c:\\tmp/DataBases/System_Catalog/Execution_Plan.txt";
     private final String _Dir="c:\\tmp/DataBases/";
-    
-    
-    
-    
-    
     private Table TMP1 = null;
+    private Table TMP2 = null;
     
     
     
     StoredDataManager() throws Exception{
-      DataS= new StoredData();
-      _FutureStoredData=new FutureTask(DataS); 
+      
       
     }
     
@@ -183,11 +176,7 @@ public class StoredDataManager implements Callable{
     /**
      *
      */
-    private void waitSD(){
-        while(_FutureStoredData.isDone()){
-            
-        }
-    }
+    
     
     private void waitSC(){
         while(ThreadManager.futureSystem.isDone()){
