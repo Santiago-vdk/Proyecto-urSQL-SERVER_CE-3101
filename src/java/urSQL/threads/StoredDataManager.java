@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import urSQL.Objects.Table;
+import urSQL.logica.logHandler;
 
 /**
  *
@@ -34,8 +35,8 @@ import urSQL.Objects.Table;
 public class StoredDataManager implements Callable{
     
     
-    private final String _ExecutionPlan = "c:\\tmp/DataBases/System_Catalog/Execution_Plan.txt";
-    private final String _Dir="c:\\tmp/DataBases/";
+    private final String _ExecutionPlan = logHandler.getInstance().getRootPath()+"urSQL/DataBases/System_Catalog/Execution_Plan.txt";
+    private final String _Dir=logHandler.getInstance().getRootPath()+"/urSQL/DataBases/";
     private Table TMP1 = new Table();
     
     
@@ -137,6 +138,15 @@ public class StoredDataManager implements Callable{
             if(CommandList.get(0).equals("INSERT")){
                 insert(CommandList.get(1),CommandList.get(2));
             }
+            if(CommandList.get(0).equals("JOIN")){
+                join(ThreadManager.Current_Schema,CommandList.get(1));
+            }
+            if(CommandList.get(0).equals("WHERE")){
+                where(CommandList.get(1),CommandList.get(2), CommandList.get(3));
+            }
+            if(CommandList.get(0).equals("SELECT")){
+                select(CommandList.get(1));
+            }
     }
     
     public void join(String pSchema, String pTable) throws Exception{
@@ -152,8 +162,10 @@ public class StoredDataManager implements Callable{
     public void where(String a, String b, String c){
         TMP1.elim_fila(a, null, b, c);
     }
-    public void select(){
-        
+    public void select(String R) throws IOException, JSONException{
+        List<String> myList = new ArrayList<String>(Arrays.asList(R.split(",")));
+        TMP1.setColumns(myList);
+        writeTable(TMP1);
     }
     public void charge(String pSchema, String pTable) throws Exception{
         ThreadManager._SYCT = new SystemCatalog();

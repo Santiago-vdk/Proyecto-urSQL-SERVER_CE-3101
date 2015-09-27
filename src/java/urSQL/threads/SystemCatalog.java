@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import urSQL.Objects.Condition;
 import urSQL.Objects.Table;
+import urSQL.logica.logHandler;
 
 /**
  *
@@ -17,7 +18,7 @@ import urSQL.Objects.Table;
  */
 public class SystemCatalog implements Callable{
     
-    private final String _Dir="c:\\tmp/DataBases/System_Catalog/";
+    private final String _Dir=logHandler.getInstance().getRootPath()+"/urSQL/DataBases/System_Catalog/";
     private final String _TSchema= "Sys_Schemas";
     private final String _TTable= "Sys_Tables";
     private final String _TColumn= "Sys_Columns";
