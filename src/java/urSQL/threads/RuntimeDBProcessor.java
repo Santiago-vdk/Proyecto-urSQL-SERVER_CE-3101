@@ -240,15 +240,18 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
         String tmp="JOIN";
         while(i<=pj){
             String tabla = _Query[i];
-            ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
+            ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
             ThreadManager._Pool.execute(ThreadManager.futureSystem);
             ThreadManager.waitSC();
             String Resp= (String) ThreadManager.futureSystem.get();
  
-            if(Resp.compareTo("true")==0){
+            if(Resp.compareTo("true")==0 && i==pi){
                 _Plan+="OPEN_TABLE~"+tabla+"\n";
-                tmp+="~"+tabla;
+               // tmp+="~"+tabla;
                 i+=2;
+            }
+            else if(i==pi+2){
+                tmp+="~"+tabla;
             }
             else{
                 //error no existe tabla
@@ -669,7 +672,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
 
         String columna;
         String tmp="";
-        for(int i=1;i<indice;i+=2){
+        for(int i=1;i<indice-1;i+=1){
             columna = _Query[i];
             if(i==1 && columna.compareTo("*")==0){
                 break;
@@ -681,15 +684,19 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
             String Resp= (String) ThreadManager.futureSystem.get();
 
             if(Resp.compareTo("true")==0){
-                tmp +="~"+columna;
+                tmp +=columna;
             }
+            else if(columna.compareTo(",")==0){
+                tmp +=columna;
+            }
+        
             else{
                 return false;
             }
             
         }
         if(tmp.compareTo("")!=0){
-            _Plan+="SELECT"+tmp;
+            _Plan+="SELECT~"+tmp;
         }
 
         return true;    

@@ -15,6 +15,7 @@ import urSQL.threads.ThreadManager;
 public class Facade {
     boolean _On = false;
     ThreadManager Threads;
+    
 
     public Facade() throws Exception {
         this.Threads = new ThreadManager();
