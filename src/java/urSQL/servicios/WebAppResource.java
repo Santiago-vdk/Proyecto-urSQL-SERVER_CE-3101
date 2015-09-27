@@ -82,6 +82,8 @@ public class WebAppResource {
      * @param msg
      * @return
      * @throws JSONException
+     * @throws java.io.IOException
+     * @throws javax.naming.NamingException
      */
     @GET
     @Path("/data/log")

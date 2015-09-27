@@ -36,38 +36,75 @@ public class Commands {
         boolean mkdir = new File(_Dir+pSchema).mkdir();        
     }
     
+    /**
+     *
+     * @param pSchema
+     */
     public void drop_Schema(String pSchema){
         boolean mkdir = new File(_Dir+pSchema).delete();  
     }
     
+    /**
+     *
+     * @param name
+     * @param schema
+     * @throws Exception
+     */
     public void create_Table(String name,String schema) throws Exception{
         BplusTree myTree = hBplusTree.Initialize(_Dir+schema+"/"+name+".tree",
                 _Dir+schema+"/"+name+".table", 6);
         
     }
     
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     */
     public void drop_Table(String pSchema, String pTable){
        boolean tree= new File(_Dir+pSchema+"/"+pTable+".tree").delete(); 
        boolean table= new File(_Dir+pSchema+"/"+pTable+".table").delete(); 
     }
     
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @param pData
+     * @throws Exception
+     */
     public void insert_In_Table(String pSchema, String pTable,String pData) throws Exception{
         BplusTree myTree = hBplusTree.Initialize(_Dir+pSchema+"/"+pTable+".tree",
                 _Dir+pSchema+"/"+pTable+".table", 6);
         
     }
     
+    /**
+     *
+     * @param pTable
+     * @param pColumns
+     * @return
+     */
     public Table select(Table pTable,List<String> pColumns){
        pTable.table_get_colums(pColumns);
        return pTable;
     }
     
+    /**
+     *
+     * @param pTable
+     * @param pCond
+     * @return
+     */
     public Table where(Table pTable, Condition pCond){
         return pTable;
     }
     
-    
-    
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String [] args) throws Exception
 	{
            /* BplusTree myTree = hBplusTree.Initialize("c:\\tmp/DataBases/Esq/Tabla_A.tree","c:\\tmp/DataBases/Esq/Tabla_A.table",6);

@@ -69,6 +69,12 @@ public class logHandler {
         out.close();
     }
 
+    /**
+     *
+     * @param pExecutionPlan
+     * @throws IOException
+     * @throws JSONException
+     */
     public void logExecution_Plan(String pExecutionPlan) throws IOException, JSONException {
         File fileDir = new File(_execPlanDir + "Execution_Plan.txt");
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, false)));
@@ -101,7 +107,12 @@ public class logHandler {
         return object.toString();
     }
     
-    
+    /**
+     *
+     * @return
+     * @throws JSONException
+     * @throws FileNotFoundException
+     */
     public String getExecutionPlan() throws JSONException, FileNotFoundException {
         
         InputStream inputstream = new FileInputStream(_execPlanDir + "Execution_Plan.txt");
@@ -114,8 +125,11 @@ public class logHandler {
         return object.toString();
     }
     
-    
-
+    /**
+     *
+     * @param is
+     * @return
+     */
     public static String readStream(InputStream is) {
         StringBuilder sb = new StringBuilder(); //Fragil
         try {

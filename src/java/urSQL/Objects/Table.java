@@ -28,10 +28,21 @@ public class Table {
     
     
  ///////////////FUNCIONES DE CARGADO Y GUARDADO DE TABLAS///////////////////////   
-    public void setTable(String pSchema,String pTable){
+
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     */
+        public void setTable(String pSchema,String pTable){
         _Schema=pSchema;
         _Table=pTable;
     }
+
+    /**
+     *
+     * @throws Exception
+     */
     public void charge_Table() throws Exception{
         BplusTree A= hBplusTree.ReadOnly(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table");
@@ -47,8 +58,10 @@ public class Table {
         A.Shutdown();
     }
     
-    
-    
+    /**
+     *
+     * @throws Exception
+     */
     public void commit_Table() throws Exception{
         boolean tree= new File(_Dir+_Schema+"/"+_Table+".tree").delete(); 
         boolean table= new File(_Dir+_Schema+"/"+_Table+".table").delete(); 
@@ -84,6 +97,10 @@ public class Table {
     
 /////////////////////FUNCIONES DE VIZUALIZACION/////////////////////////////////
     
+    /**
+     *
+     */
+        
     
     public void printTable(){
        for(int i=0; i<_Values.size(); i++){
@@ -97,12 +114,22 @@ public class Table {
     
 ////////////////////////////////////////////////////////////////////////////////
     
+    /**
+     *
+     * @param pList
+     */
+        
    public void add(List<String> pList){
        _Values.add(pList);
        
    } 
    
-   public void set_Value(String pColumn, String pValor){
+    /**
+     *
+     * @param pColumn
+     * @param pValor
+     */
+    public void set_Value(String pColumn, String pValor){
        int Index=get_Index(pColumn);
        for (int i=0; i<_Values.size();i++){
            _Values.get(i).remove(Index);
@@ -110,10 +137,11 @@ public class Table {
        }
    }
    
-
-   
-   
-   public void table_get_colums(List<String> pColumn){
+    /**
+     *
+     * @param pColumn
+     */
+    public void table_get_colums(List<String> pColumn){
        
        List<List> tmp1=new ArrayList<List>();
     
@@ -135,7 +163,11 @@ public class Table {
        
    }
    
-   public void join_Table(Table pTabla){
+    /**
+     *
+     * @param pTabla
+     */
+    public void join_Table(Table pTabla){
        List<List> tmp1= pTabla.get_Values();
        List<List> tmp2= get_Values();
        List<List> tmp3= new ArrayList<List>();
@@ -228,7 +260,14 @@ public class Table {
        }
        return R;        
    }
-   public void act_fila(List<Condition> Conds,String Col , String Val){
+
+    /**
+     *
+     * @param Conds
+     * @param Col
+     * @param Val
+     */
+    public void act_fila(List<Condition> Conds,String Col , String Val){
        
        List<List> tmp=new ArrayList<List>();
        for(int i=0;i<_Values.size();i++){
@@ -247,7 +286,14 @@ public class Table {
        set_Values(tmp);
    }
    
-   public void elim_fila(String pColumA, String pColumB, String pValor, String pComp){
+    /**
+     *
+     * @param pColumA
+     * @param pColumB
+     * @param pValor
+     * @param pComp
+     */
+    public void elim_fila(String pColumA, String pColumB, String pValor, String pComp){
        int IndxA=get_Index(pColumA);
        int IndxB=get_Index(pColumB);
        List<List> tmp=new ArrayList<List>();
@@ -303,6 +349,12 @@ public class Table {
        }
        set_Values(tmp);
    }
+
+    /**
+     *
+     * @param Conds
+     * @throws Exception
+     */
     public void borrar_fila(List<Condition> Conds) throws Exception{
        
        List<List> tmp=new ArrayList<List>();
@@ -319,9 +371,13 @@ public class Table {
        
    }
    
-   
-   
-   public boolean exists(String pColumn, String pDato){
+    /**
+     *
+     * @param pColumn
+     * @param pDato
+     * @return
+     */
+    public boolean exists(String pColumn, String pDato){
        int Index=get_Index(pColumn);
        boolean bool=false;
        for(int i=0;i<_Values.size();i++){
@@ -352,19 +408,35 @@ public class Table {
        return Index;
    }
    
-   public void set_Values(List<List> pValues){
+    /**
+     *
+     * @param pValues
+     */
+    public void set_Values(List<List> pValues){
        this._Values = pValues;
    }
-   public List<List> get_Values(){
+
+    /**
+     *
+     * @return
+     */
+    public List<List> get_Values(){
        return _Values;
    }
 
-    
-   public void setColumns(List<String> pColumns){
+    /**
+     *
+     * @param pColumns
+     */
+    public void setColumns(List<String> pColumns){
        this._Columns= pColumns;
    }
 
-   public void set_PK(String pPK){
+    /**
+     *
+     * @param pPK
+     */
+    public void set_PK(String pPK){
        _PK=pPK;
    }
 }

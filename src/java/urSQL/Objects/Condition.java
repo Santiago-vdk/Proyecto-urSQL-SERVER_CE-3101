@@ -15,6 +15,13 @@ public class Condition {
     private String _Val;
     private String _Comp;
     
+    /**
+     *
+     * @param pColA
+     * @param pColB
+     * @param pVal
+     * @param pComp
+     */
     public Condition(String pColA,String pColB,String pVal,String pComp){
         _ColA=pColA;
         _ColB=pColB;
@@ -22,16 +29,34 @@ public class Condition {
         _Comp=pComp;
     }
     
-    
+    /**
+     *
+     * @return
+     */
     public String get_ColA(){
         return _ColA;
     }
+
+    /**
+     *
+     * @return
+     */
     public String get_ColB(){
         return _ColB;
     }
+
+    /**
+     *
+     * @return
+     */
     public String get_Val(){
         return _Val;
     }
+
+    /**
+     *
+     * @return
+     */
     public String get_Comp(){
         return _Comp;
     }

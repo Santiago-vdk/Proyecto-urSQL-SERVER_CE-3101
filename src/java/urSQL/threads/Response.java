@@ -20,9 +20,18 @@ public class Response {
         _State="";
     }
     
+    /**
+     *
+     * @param pTabla
+     */
     public void setTabla(Table pTabla){
         _Tabla=pTabla;
     }
+
+    /**
+     *
+     * @return
+     */
     public Table getTabla(){
         return _Tabla;
     }

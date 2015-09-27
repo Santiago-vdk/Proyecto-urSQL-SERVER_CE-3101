@@ -12,6 +12,10 @@ package urSQL.logica;
 public class Facade {
     boolean _On = false;
     
+    /**
+     *
+     * @param pQuerry
+     */
     public void processQuerry(String pQuerry){
         if(_On){
             

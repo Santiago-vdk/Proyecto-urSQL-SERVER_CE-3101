@@ -27,14 +27,50 @@ public class SystemCatalog implements Callable{
     private Table _Table_Schemas;
     private Table _Table_Tables;
     private Table _Table_Columns;
+
+    /**
+     *
+     */
     public String local = "";
+
+    /**
+     *
+     */
     public String _Schema="";
+
+    /**
+     *
+     */
     public String _Table="";
+
+    /**
+     *
+     */
     public String _Column="";
+
+    /**
+     *
+     */
     public String _PK="";
+
+    /**
+     *
+     */
     public String _Modifider="";
+
+    /**
+     *
+     */
     public String _Type="";
+
+    /**
+     *
+     */
     public String _Order="";
+
+    /**
+     *
+     */
     public String _Mode="";
     
     
@@ -45,7 +81,17 @@ public class SystemCatalog implements Callable{
         
     }
     
-    
+    /**
+     *
+     * @param _Schema
+     * @param _Table
+     * @param _Column
+     * @param _PK
+     * @param _Modifider
+     * @param _Type
+     * @param _Order
+     * @param _Mode
+     */
     public void set_Plan(String _Schema,String _Table,String _Column,String _PK,
             String _Modifider,String _Type,String _Order,String _Mode){
         
@@ -105,9 +151,23 @@ public class SystemCatalog implements Callable{
     
     
     /////////////////////////// FUNCIONES DE VERIFICACION///////////////////////////
-    public boolean verify_Schema(String pSchema){
+
+    /**
+     *
+     * @param pSchema
+     * @return
+     */
+        public boolean verify_Schema(String pSchema){
         return _Table_Schemas.exists("Schema", pSchema);
     }
+
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @param pColumn
+     * @return
+     */
     public boolean verify_Pk(String pSchema,String pTable, String pColumn){
         Table Tmp= _Table_Columns;
         Tmp.elim_fila("Schema", null, pSchema, "=");
@@ -115,6 +175,14 @@ public class SystemCatalog implements Callable{
         Tmp.elim_fila("Column", null, pColumn, "=");
         return Tmp.exists("PK", "true");
     }
+
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @param pColumn
+     * @return
+     */
     public String verify_Column_Type(String pSchema,String pTable, String pColumn){
         Table Tmp= _Table_Columns;
         Tmp.elim_fila("Schema", null, pSchema, "=");
@@ -123,6 +191,14 @@ public class SystemCatalog implements Callable{
         return (String) Tmp.get_Values().get(0).get(5);
         
     }
+
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @param pColumn
+     * @return
+     */
     public boolean verify_Column(String pSchema,String pTable, String pColumn){
         Table Tmp= _Table_Columns;
         Tmp.elim_fila("Schema", null, pSchema, "=");
@@ -130,12 +206,26 @@ public class SystemCatalog implements Callable{
         return Tmp.exists("Column",pColumn);
         
     }
+
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @return
+     */
     public boolean verify_Table(String pSchema,String pTable){
         Table Tmp= _Table_Tables;
         Tmp.elim_fila("Schema", null, pSchema, "=");
         return Tmp.exists("Table", pTable);
     }
     
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @param pColumn
+     * @return
+     */
     public boolean verify_Column_Modifider(String pSchema,String pTable, String pColumn){
         Table Tmp= _Table_Columns;
         Tmp.elim_fila("Schema", null, pSchema, "=");
@@ -150,6 +240,12 @@ public class SystemCatalog implements Callable{
     
     /////////////////// FUNCIONES DE INSERCION//////////////////////////////////
     
+    /**
+     *
+     * @param pSchema
+     * @throws Exception
+     */
+        
     public void insert_Schema(String pSchema) throws Exception{
         List<String> Tmp = new ArrayList<String>();
         Tmp.add(pSchema);
@@ -158,6 +254,12 @@ public class SystemCatalog implements Callable{
         chargeTables();
     }
     
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @throws Exception
+     */
     public void insert_Table(String pSchema,String pTable) throws Exception{
         List<String> Tmp = new ArrayList<String>();
         Tmp.add(pSchema);
@@ -167,6 +269,17 @@ public class SystemCatalog implements Callable{
         chargeTables();
     }
     
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @param pColumn
+     * @param pPK
+     * @param pModifider
+     * @param pType
+     * @param pOrder
+     * @throws Exception
+     */
     public void insert_Column(String pSchema,String pTable,String pColumn,String pPK,
             String pModifider,String pType,String pOrder ) throws Exception{
         List<String> Tmp = new ArrayList<String>();
@@ -190,6 +303,13 @@ public class SystemCatalog implements Callable{
     
     ////////FUNCIONES DE RECUPERACION DE LA METADATA DE LAS COLUMNAS////////////
     
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @return
+     */
+        
     public String re_Columns(String pSchema,String pTable){
         _Table_Columns.elim_fila("Schema", null, pSchema, "=");
         _Table_Columns.elim_fila("Table", null, pTable, "=");
@@ -206,6 +326,12 @@ public class SystemCatalog implements Callable{
         return Tmp4;
     }
     
+    /**
+     *
+     * @param pSchema
+     * @param pTable
+     * @return
+     */
     public String re_PK(String pSchema,String pTable){
         _Table_Columns.elim_fila("Schema", null, pSchema, "=");
         _Table_Columns.elim_fila("Table", null, pTable, "=");
@@ -222,7 +348,12 @@ public class SystemCatalog implements Callable{
     ////////////////////////////////////////////////////////////////////////////
     
     /////////////////FUNCIONES DE ELIMINACION///////////////////////////////////
-    public void elim_Schema() throws Exception{
+
+    /**
+     *
+     * @throws Exception
+     */
+        public void elim_Schema() throws Exception{
         Condition A= new Condition("Schema",null,_Schema,"=");
         List<Condition> X= new ArrayList<Condition>();
         X.add(A);
@@ -234,6 +365,10 @@ public class SystemCatalog implements Callable{
         _Table_Columns.commit_Table();
     }
     
+    /**
+     *
+     * @throws Exception
+     */
     public void elim_Table() throws Exception{
         Condition A= new Condition("Table",null,_Table,"=");
         List<Condition> X= new ArrayList<Condition>();
@@ -305,7 +440,10 @@ public class SystemCatalog implements Callable{
         return Result;
     }
     
-
+    /**
+     *
+     * @param local_query
+     */
     public void sendQuery(String local_query) {
         local = local_query;
     }

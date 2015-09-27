@@ -8,19 +8,65 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-
-
+/**
+ *
+ * @author Shagy
+ */
 public class ThreadManager {
+
+    /**
+     *
+     */
     public static ExecutorService _Pool;
+
+    /**
+     *
+     */
     public static Response _DATA;
+
+    /**
+     *
+     */
     public static String Current_Schema;
+
+    /**
+     *
+     */
     public static SystemCatalog _SYCT;
+
+    /**
+     *
+     */
     public static RuntimeDBProcessor _RDBM;
+
+    /**
+     *
+     */
     public static StoredDataManager _STDM;
+
+    /**
+     *
+     */
     public static StoredData _SD;
+
+    /**
+     *
+     */
     public static FutureTask futureSystem;
+
+    /**
+     *
+     */
     public static FutureTask futureRDBM;
+
+    /**
+     *
+     */
     public static FutureTask futureSTDM;
+
+    /**
+     *
+     */
     public static FutureTask futureSD;
     private String _Dir = "c:\\tmp/";
   
@@ -29,6 +75,10 @@ public class ThreadManager {
         
     }
     
+    /**
+     *
+     * @throws Exception
+     */
     public void Start() throws Exception{
         _Pool = Executors.newFixedThreadPool(4);
         _SYCT= new SystemCatalog();
@@ -42,12 +92,19 @@ public class ThreadManager {
        
     }
     
+    /**
+     *
+     */
     public void stop(){
         _Pool.shutdown();
        
     }
     
-    
+    /**
+     *
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     public void sendQuery() throws InterruptedException, ExecutionException{
         
         
@@ -57,10 +114,13 @@ public class ThreadManager {
         
     }
 
-    
-    
-    
-    
+    /**
+     *
+     * @param args
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws Exception
+     */
     public static synchronized void main(String[] args) throws InterruptedException, ExecutionException, Exception {
        
         
@@ -76,29 +136,46 @@ public class ThreadManager {
         //pool.shutdown();
     }
     
-    
+    /**
+     *
+     */
     public void waitRDBM(){
         while(futureRDBM.isDone()){
             
         }
     }
+
+    /**
+     *
+     */
     public static void waitSC(){
         while(futureSystem.isDone()){
             
         }
     }
+
+    /**
+     *
+     */
     public  void waitSTDM(){
         while(futureSTDM.isDone()){
             
         }
     }
+
+    /**
+     *
+     */
     public void waitSD(){
         while(futureSD.isDone()){
             
         }
     }
     
-    
+    /**
+     *
+     * @throws Exception
+     */
     public void iniciar_Directorios() throws Exception{
         boolean mkdir1 = new File(_Dir).mkdir();
         boolean mkdir2 = new File(_Dir+"DataBases").mkdir();
