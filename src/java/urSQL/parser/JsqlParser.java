@@ -18,26 +18,24 @@ public class JsqlParser {
    
     /**
      *
-     * @param pQuerry
-     * @return
+     * @param pQuery
      */
-    public boolean Parse(String pQuerry){
+    public void Parse(String pQuery){
     try{
-            net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuerry);
+            net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuery);
             //net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse("select *");
             //System.out.println(parse.toString());
-           
             executionPlan.createPlan(parse.toString());//crea el plan de ejecucion
-            return true;
         }
         catch (JSQLParserException ex) {
-            SecondTry(pQuerry);
-            String msj = ex.getCause().toString();
-            //System.out.println(msj);
-            System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
-            return false;
-           
-           
+            if(SecondTry(pQuery)){
+                executionPlan.createPlan(elimSpaces(pQuery));
+            }
+            else{
+                String msj = ex.getCause().toString();
+                System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
+            }
+            
             //ver si es un clp o alter
            
            
@@ -73,7 +71,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         return tmp;
     }
    
-    private void SecondTry(String pQuery){
+    private boolean SecondTry(String pQuery){
         boolean valido=false;
         String tmp = elimSpaces(pQuery);
         if(tmp.substring(0,16).toUpperCase().compareTo("CREATE DATABASE ")==0){
@@ -94,9 +92,8 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         if(tmp.substring(0,17).toUpperCase().compareTo("DISPLAY DATABASE ")==0){
             valido=true;
         }
-        if(valido){
-            executionPlan.createPlan(tmp);
-        }
+        
+        return valido;
     }
    
     /**
