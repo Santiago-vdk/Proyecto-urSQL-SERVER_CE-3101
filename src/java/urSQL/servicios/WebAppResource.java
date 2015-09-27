@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import urSQL.logica.logHandler;
+import urSQL.threads.ThreadManager;
 
 /**
  * REST Web Service
@@ -88,7 +89,6 @@ public class WebAppResource {
         fila3.put("8");
         fila3.put("9");
         
-        
         matrix.put(fila1);
         matrix.put(fila2);
         matrix.put(fila3);
@@ -104,8 +104,6 @@ public class WebAppResource {
         master.put("Valores", matrix);
         master.put("Columnas", col_names);
         
-
-
         return master.toString();
     }
 
@@ -246,4 +244,17 @@ public class WebAppResource {
         System.out.println(globalarray.toString());
         return globalarray.toString();
     }
+    
+    @GET
+    @Path("/test")
+    @Produces("application/json")
+    public String test() throws JSONException, Exception {
+        ThreadManager th = new ThreadManager();
+        th.iniciar_Directorios();
+        
+        return "true";
+    }
+    
+    
+    
 }

@@ -71,6 +71,7 @@ public class logHandler {
         out.println(String.valueOf(pError) + "~" + timeStamp + "~" + "'" + pAction + "'" + "~" + pStatus + "~" + pDuration);
         out.close();
         
+        
     }
 
     
