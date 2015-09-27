@@ -9,6 +9,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
@@ -58,22 +59,21 @@ public class WebAppResource {
     public String postQuery(String msg) throws JSONException, InterruptedException, IOException {
 
         /* No borrar
-        long startTime = System.nanoTime();
-        Thread.sleep(1000);
+         long startTime = System.nanoTime();
+         Thread.sleep(1000);
         
         
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime)/1000000;  //divide by 1000000 to get milliseconds.
+         long endTime = System.nanoTime();
+         long duration = (endTime - startTime)/1000000;  //divide by 1000000 to get milliseconds.
 
-        String path = ctx.getRealPath("/");
-        logHandler.getInstance().logEvent(path, false, msg, "executed", String.valueOf(duration));
-        */
-        
+         String path = ctx.getRealPath("/");
+         logHandler.getInstance().logEvent(path, false, msg, "executed", String.valueOf(duration));
+         */
         JSONObject obj = new JSONObject();
         obj.put("dmata", "daca");
-        
+
         Thread.sleep(1000);
-        
+
         return obj.toString();
     }
 
@@ -88,15 +88,29 @@ public class WebAppResource {
     @GET
     @Path("/data/log")
     @Produces("application/json")
-    public String queryLog(String msg) throws JSONException, IOException, NamingException  {
+    public String queryLog(String msg) throws JSONException, IOException, NamingException {
         Object serverName = new InitialContext().lookup("serverName");
-        
-        
-       // String path = ctx.getRealPath("/");
+
+        // String path = ctx.getRealPath("/");
         String JSONResponse = logHandler.getInstance().getLastEventJSON(serverName.toString());
         //logHandler.getInstance().logExecution_Plan("asdfasdfasdfasdfa");
         //logHandler.getInstance().getExecutionPlan();
         return JSONResponse;
     }
-
+    
+    @GET
+    @Path("/initialSetup")
+    @Produces("application/json")
+    public String contextChecker(){
+        try {
+            String realPath = ctx.getRealPath("/");
+            realPath = realPath.substring(0, realPath.indexOf("/apps"));
+            logHandler.getInstance().verifyStructure(realPath);
+            
+        } catch (Exception e) {
+            return "Error generating urSQL Folder Context.";
+        }
+        
+        return "true";
+    } 
 }
