@@ -9,6 +9,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -84,10 +86,14 @@ public class WebAppResource {
     @GET
     @Path("/data/log")
     @Produces("application/json")
-    public String queryLog(String msg) throws JSONException  {
-        String path = ctx.getRealPath("/");
-        String JSONResponse = logHandler.getInstance().getLastEventJSON(path);
+    public String queryLog(String msg) throws JSONException, IOException, NamingException  {
+        Object serverName = new InitialContext().lookup("serverName");
         
+        
+       // String path = ctx.getRealPath("/");
+        String JSONResponse = logHandler.getInstance().getLastEventJSON(serverName.toString());
+        //logHandler.getInstance().logExecution_Plan("asdfasdfasdfasdfa");
+        //logHandler.getInstance().getExecutionPlan();
         return JSONResponse;
     }
 

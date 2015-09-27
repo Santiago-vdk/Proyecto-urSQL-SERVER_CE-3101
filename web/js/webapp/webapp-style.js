@@ -223,4 +223,10 @@ $(document).ready(function () {
         refreshTree();
     });
 
+    $('#plan-log').click(function (e) {
+        e.stopPropagation();
+        //ExecuteGetExecutionPlan
+        bootbox.alert('<html><h1>Execution Plan</h1>');
+    });
+
 });
