@@ -86,15 +86,20 @@ public class WebAppResource {
         
         JSONObject obj2 = new JSONObject();
         
+        System.out.println(rs.get_TableFlag());
+        
+        obj2.put("table", rs.get_TableFlag()); //OJO
+        
         //Si no hay datos no los devuelvo
         if(rs.get_TableFlag()){
             obj2.put("Valores", rs.getTabla());
             obj2.put("Columnas", rs.getColumnas());
         }
+        else {
         
-        obj2.put("table", rs.get_TableFlag()); //OJO
         obj2.put("Columnas","none");
         obj2.put("Valores","none");
+        }
 
         return obj2.toString();
     }

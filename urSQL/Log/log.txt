@@ -1,7 +1,0 @@
-false~14:54:05~START SERVER~executed~-
-false~14:54:05~~sucessful~31 ms
-false~14:54:23~create database test~Sucessful~410 ms
-false~14:54:47~set database test~Sucessful~313 ms
-false~14:54:59~CREATE TABLE test5 (A3 int NOT NULL, B3 varchar (255) NOT NULL, C3 varchar, PRIMARY KEY (A3))~Sucessful~271 ms
-false~14:55:59~INSERT INTO test5 (A3, B3, C3) VALUES (a, b, c)~Sucessful~197 ms
-false~14:56:33~SELECT * FROM test5~Sucessful~190 ms
