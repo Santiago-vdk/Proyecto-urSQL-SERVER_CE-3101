@@ -6,6 +6,8 @@
 package urSQL.logica;
 
 import java.util.concurrent.ExecutionException;
+import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
 import urSQL.threads.ThreadManager;
 
 /**
@@ -13,42 +15,52 @@ import urSQL.threads.ThreadManager;
  * @author RafaelAngel
  */
 public class Facade {
+
     boolean _On = false;
     ThreadManager Threads;
-    
 
-    public Facade() throws Exception {
-        this.Threads = new ThreadManager();
+    private static Facade _singleton = new Facade();
+
+    private Facade() {
+
+    }
+    
+    public static Facade getInstance(){
+        return _singleton;
+    }
+
+    public boolean getOn(){
+        return _On;
     }
     
     /**
      *
-     * @param pQuerry
+     * @param pQuery
+     * @throws java.lang.InterruptedException
+     * @throws java.util.concurrent.ExecutionException
      */
-    public String processQuerry(String pQuerry) throws InterruptedException, ExecutionException, Exception{
-        if(_On){
-            
-            if(pQuerry.toUpperCase().compareTo("STOP")==0){
+    public String processQuerry(String pQuery) throws InterruptedException, ExecutionException, Exception {
+
+        if (_On) {
+
+            if (pQuery.toUpperCase().compareTo("STOP") == 0) {
                 _On = false;
-                 //finaliza los threads
+                Threads.stop(); //fragil
+            } else {
+                return Threads.sendQuery(pQuery);
             }
-            else{
-                return Threads.sendQuery(pQuerry);
-            }
-           
-        }
-        else if(pQuerry.toUpperCase().compareTo("START")==0){
+
+        } else if (pQuery.toUpperCase().compareTo("START") == 0) {
+            this.Threads = new ThreadManager();
             _On = true;
-            
+
         }
         return "";
-        
+
     }
-    
-    public String[] getList(){
+
+    public String[] getList() {
         return ThreadManager.ListDB;
     }
-    
-    
-    
+
 }

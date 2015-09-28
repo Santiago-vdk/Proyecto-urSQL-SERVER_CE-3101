@@ -4,50 +4,99 @@
  * and open the template in the editor.
  */
 package urSQL.threads;
-
+ 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import urSQL.Objects.Table;
-
+ 
 /**
  *
  * @author David
  */
 public class Response {
-    
-    private String _State;
-    private Table _Tabla=null;
-    
+   
+    private String _State= "";
+    private JSONArray _Tabla=null;
+    private JSONArray Columnas= null;
+    private String Consulta = "";
+    private String Error = "";
+    private boolean Tabla_Flag = false;
+    private boolean Error_Flag = false;
+   
     Response(){
-        _State="";
+       
     }
-    
+     public void setError(String pError){
+         Error = pError;
+     }
+     
+     public String getError(){
+         return Error;
+     }
+    public void setConsulta(String pConsulta){
+        Consulta = pConsulta;
+    }
+   
+    public String getConsulta(){
+        return Consulta;
+    }
     /**
      *
      * @param pTabla
      */
-    public void setTabla(Table pTabla){
-        _Tabla=pTabla;
+    public void setColumnas(JSONArray pColumnas){
+        Columnas=pColumnas;
     }
-
+ 
     /**
      *
      * @return
      */
-    public Table getTabla(){
+    public JSONArray getColumnas(){
+        return Columnas;
+    }
+    /**
+     *
+     * @param pTabla
+     */
+    public void setTabla(JSONArray pTabla){
+        _Tabla=pTabla;
+    }
+ 
+    /**
+     *
+     * @return
+     */
+    public JSONArray getTabla(){
         return _Tabla;
     }
-
+   
     /**
      * @return the _State
      */
     public String getState() {
         return _State;
     }
-
+ 
     /**
      * @param _State the _State to set
      */
     public void setState(String _State) {
         this._State = _State;
     }
-    
+   
+    public void set_TableFlag(boolean pFlag){
+        Tabla_Flag = pFlag;
+    }
+    public void set_ErrorFlag(boolean pFlag){
+        Error_Flag = pFlag;
+    }
+   
+    public boolean get_TableFlag(boolean pFlag){
+        return Tabla_Flag;
+    }
+    public boolean get_ErrorFlag(boolean pFlag){
+        return Error_Flag;
+    }
+   
 }

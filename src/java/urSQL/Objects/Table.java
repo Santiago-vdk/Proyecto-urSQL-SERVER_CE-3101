@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package urSQL.Objects;
-
+ 
 import NET.sourceforge.BplusJ.BplusJ.BplusTree;
 import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
 import java.io.File;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import urSQL.logica.logHandler;
-
+ 
 /**
  *
  * @author David
@@ -20,17 +20,17 @@ import urSQL.logica.logHandler;
 public class Table {
     private List<List> _Values= new ArrayList<List>();
     private List<String> _Columns=new ArrayList<String>();
-    private final String _Dir= logHandler.getInstance().getRootPath()+"/urSQL/DataBases/";
+    private final String _Dir= "c:\\tmp/DataBases/";
     //private final String _DirSys= "c:\\tmp/DataBases/System_Catalog/";
     private String _PK="";
     private String _Schema;
     private String _Table;
    
-
-    
-    
- ///////////////FUNCIONES DE CARGADO Y GUARDADO DE TABLAS///////////////////////   
-
+ 
+   
+   
+ ///////////////FUNCIONES DE CARGADO Y GUARDADO DE TABLAS///////////////////////  
+ 
     /**
      *
      * @param pSchema
@@ -40,29 +40,29 @@ public class Table {
         _Schema=pSchema;
         _Table=pTable;
     }
-
+ 
     /**
      *
      * @throws Exception
      */
     public void charge_Table() throws Exception{
         _Values.removeAll(_Values);
-        
+       
         BplusTree A= hBplusTree.ReadOnly(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table");
-        
+       
         String Key= A.FirstKey();
         while(Key!=null){
             String Data= A.get(Key);
             _Values.add( new ArrayList<>(Arrays.asList(Data.split(","))));
             Key= A.NextKey(Key);
-            
-                  
+           
+                 
         }
-        
+       
         A.Shutdown();
-        
-        
+       
+       
     }
     public void insert(String key,String val) throws Exception{
        BplusTree myTree = hBplusTree.ReOpen(_Dir+_Schema+"/"+_Table+".tree",
@@ -76,9 +76,9 @@ public class Table {
      * @throws Exception
      */
     public void commit_Table() throws Exception{
-        boolean tree= new File(_Dir+_Schema+"/"+_Table+".tree").delete(); 
-        boolean table= new File(_Dir+_Schema+"/"+_Table+".table").delete(); 
-        
+        boolean tree= new File(_Dir+_Schema+"/"+_Table+".tree").delete();
+        boolean table= new File(_Dir+_Schema+"/"+_Table+".table").delete();
+       
         BplusTree myTree = hBplusTree.Initialize(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table",6);
         int Index_PK= get_Index(_PK);
@@ -92,54 +92,55 @@ public class Table {
                     tmp=tmp+_Values.get(i).get(j)+",";
                 }
             }
-            
-            
+           
+           
             myTree.Set(String.valueOf(_Values.get(i).get(Index_PK)), tmp);
-            
+           
         }
         myTree.Commit();
         myTree.Shutdown();
         charge_Table();
+       
     }
-
-    
-    
-    
+ 
+   
+   
+   
 ////////////////////////////////////////////////////////////////////////////////
-    
-    
-    
-    
-    
+   
+   
+   
+   
+   
 /////////////////////FUNCIONES DE VIZUALIZACION/////////////////////////////////
-    
+   
     /**
      *
      */
-        
-    
+       
+   
     public void printTable(){
        for(int i=0; i<_Values.size(); i++){
            for(int j=0; j<_Values.get(0).size(); j++){
-              System.out.print(_Values.get(i).get(j)+"  "); 
+              System.out.print(_Values.get(i).get(j)+"  ");
            }
            System.out.print("\n");
        }
    }
-    
-    
+   
+   
 ////////////////////////////////////////////////////////////////////////////////
-    
+   
     /**
      *
      * @param pList
      */
-        
+       
    public void add(List<String> pList) throws Exception{
        _Values.add(pList);
        
        
-   } 
+   }
    
     /**
      *
@@ -161,8 +162,8 @@ public class Table {
     public void table_get_colums(List<String> pColumn){
        
        List<List> tmp1=new ArrayList<List>();
-    
-              
+   
+             
              
            
         for (int j=0;j<_Values.size();j++){
@@ -173,7 +174,7 @@ public class Table {
                 tmp2.add(tmp3);
             }
             tmp1.add(tmp2);
-        
+       
        }
        set_Values(tmp1);
        
@@ -195,7 +196,11 @@ public class Table {
                 tmp3.add(tmp4);
             }
         }
-        this.set_Values(tmp3);
+        set_Values(tmp3);
+        List<String> tmp4 = new ArrayList<String>();
+        tmp4.addAll(getColumns());
+        tmp4.addAll(pTabla.getColumns());
+        setColumns(tmp4);
     }
    
    private boolean ver_Conds(List<Condition> Conds, List<String> tmp2){
@@ -211,21 +216,21 @@ public class Table {
                            R=true;
                        }
                        else{
-                          R=false; 
+                          R=false;
                        }
                     case "<":
                         if(Integer.parseInt(tmp2.get(IndxA))<Integer.parseInt(tmp2.get(IndxB))){
                            R=true;
                        }
                     else{
-                         R=false; 
+                         R=false;
                        }
                     case "=":
                         if(tmp2.get(IndxA).equals(tmp2.get(IndxB))){
                           R=true;
                        }
                     else{
-                          R=false; 
+                          R=false;
                        }
                 }
            }
@@ -235,18 +240,18 @@ public class Table {
                     case "is null":
                        if(tmp2.get(IndxA).equals("NULL")){
                       R=true;
-                       } 
+                       }
                     else{
                          R=false;
                        }
                     case "is not null":
                         if(!(tmp2.get(IndxA).equals("NULL"))){
                          R=true;
-                       } 
+                       }
                     else{
                           R=false;
                        }
-                    
+                   
                     case ">":
                        if(Integer.parseInt(tmp2.get(IndxA))>Integer.parseInt(tcond.get_Val())){
                           R=true;
@@ -259,25 +264,25 @@ public class Table {
                          R=true;
                        }
                     else{
-                          R=false; 
+                          R=false;
                        }
                     case "=":
-                        
+                       
                         if(tmp2.get(IndxA).equals(tcond.get_Val())){
                        R=true;
                        }
                     else{
                            R=false;
                        }
-                
+               
                }
            }
-                
+               
              
        }
        return R;        
    }
-
+ 
     /**
      *
      * @param Conds
@@ -318,7 +323,7 @@ public class Table {
            
            List<String> tmp2 = new ArrayList<String>(_Values.get(i));
            if (pColumB!=null){
-                
+               
              switch (pComp){
                     case ">":
                        if(Integer.parseInt(tmp2.get(IndxA))>Integer.parseInt(tmp2.get(IndxB))){
@@ -341,12 +346,12 @@ public class Table {
                     case "is null":
                        if(tmp2.get(IndxA).equals("NULL")){
                            tmp.add(tmp2);
-                       } 
+                       }
                     case "is not null":
                         if(!(tmp2.get(IndxA).equals("NULL"))){
                            tmp.add(tmp2);
-                       } 
-                    
+                       }
+                   
                     case ">":
                        if(Integer.parseInt(tmp2.get(IndxA))>Integer.parseInt(pValor)){
                            tmp.add(tmp2);
@@ -360,13 +365,13 @@ public class Table {
                            
                            tmp.add(tmp2);
                        }
-                
+               
                }
            }
        }
        set_Values(tmp);
    }
-
+ 
     /**
      *
      * @param Conds
@@ -380,7 +385,7 @@ public class Table {
            List<String> tmp2 = new ArrayList<String>();
            tmp2.addAll(_Values.get(i));
            if (!ver_Conds(Conds, tmp2)){
-              tmp.add(tmp2); 
+              tmp.add(tmp2);
            }
            
        }
@@ -430,9 +435,9 @@ public class Table {
      * @param pValues
      */
     public void set_Values(List<List> pValues){
-       this._Values = pValues;
+       _Values = pValues;
    }
-
+ 
     /**
      *
      * @return
@@ -440,7 +445,7 @@ public class Table {
     public List<List> get_Values(){
        return _Values;
    }
-
+ 
     /**
      *
      * @param pColumns
@@ -449,11 +454,11 @@ public class Table {
        
        this._Columns= pColumns;
    }
-    
+   
     public List<String> getColumns(){
         return _Columns;
     }
-
+ 
     /**
      *
      * @param pPK
@@ -461,8 +466,12 @@ public class Table {
     public void set_PK(String pPK){
        _PK=pPK;
    }
-    
+   
     public String getPK(){
         return _PK;
+    }
+   
+    public void elimDatos(){
+        _Values.removeAll(_Values);
     }
 }

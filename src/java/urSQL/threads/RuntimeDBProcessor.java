@@ -8,6 +8,7 @@ package urSQL.threads;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.json.JSONException;
@@ -16,19 +17,19 @@ import urSQL.logica.logHandler;
  
 /**
  *
- * @author Shagy
+ * @author Fa fa Rafael
  */
 public class RuntimeDBProcessor implements Callable {
-    
+   
     String Query ="";
     RuntimeDBProcessor() throws Exception{
-        
+       
     }
  
     public void set_Query(String pQuery){
         Query = pQuery;
     }
-    
+   
     @Override
     public String call() throws Exception {
         Response response = Parse(Query);
@@ -37,12 +38,12 @@ public class RuntimeDBProcessor implements Callable {
     }
    
  
-    
+   
  
     /**
      *
      */
-    
+   
    
    
    
@@ -60,18 +61,19 @@ public class RuntimeDBProcessor implements Callable {
      * @throws java.io.IOException
      * @throws org.json.JSONException
      */
-      
+     
        
-    
-    public Response Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
+   
+    public Response Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException, Exception{
     try{
             net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuery);
             //net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse("select *");
             //System.out.println(parse.toString());
-            
+            ThreadManager._DATA.setConsulta(parse.toString());
             return createPlan(parse.toString());//crea el plan de ejecucion
         }
         catch (JSQLParserException ex) {
+            ThreadManager._DATA.setConsulta(elimSpaces(pQuery));
             if(SecondTry(pQuery)){
                 return createPlan(elimSpaces(pQuery));
             }
@@ -79,10 +81,13 @@ public class RuntimeDBProcessor implements Callable {
                 String msj = ex.getCause().toString();
                 Response response = new Response();
                 response.setState("1064: You have an error in your SQL syntax");
+                ThreadManager._DATA.setState("unsucessful");
+                ThreadManager._DATA.setError("Error: 1064: You have an error in your SQL syntax" +msj.substring(30, msj.indexOf("Was expecting")));
+                ThreadManager._DATA.set_ErrorFlag(true);
                 //System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
                 return response;
             }
-            
+           
             //ver si es un clp o alter
            
            
@@ -119,7 +124,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     }
    
     private boolean SecondTry(String pQuery){
-        
+       
         boolean valido=false;
         String tmp = elimSpaces(pQuery);
         if(tmp.length()>16 && tmp.substring(0,16).toUpperCase().compareTo("CREATE DATABASE ")==0){
@@ -143,20 +148,22 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
         if (tmp.length()>13 && tmp.substring(0,13).toUpperCase().compareTo("SET DATABASE ")==0){
             valido=true;
         }
-        
+       
         return valido;
     }
-    
+   
     //**************************************************************************
-    
-    
-    
-    
+   
+   
+   
+   
     //CREACION DEL PLAN DE EJECUCION
    
     private String[] _Query;
     private String _Plan="";
-    
+    private boolean IsUpdate=false;
+    private boolean isDelete=false;
+   
     //funciones auxiliares
     //**************************************************************************
     private int findInQuery(String pString){
@@ -238,30 +245,36 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     }
    
    
-private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, ExecutionException{
+private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, ExecutionException, Exception{
+        System.out.println("a "+pi+" as "+pj);
         int i =pi;
         String tmp="JOIN";
         while(i<=pj){
             String tabla = _Query[i];
-            ThreadManager._SYCT.set_Plan(null, tabla, null, null, null, null, null, "V_T");
-            ThreadManager._Pool.execute(ThreadManager.futureSystem);
-            ThreadManager.waitSC();
-            String Resp= (String) ThreadManager.futureSystem.get();
- 
+            System.out.println(tabla);
+            ThreadManager._SYCT = new SystemCatalog();
+            ThreadManager.futureSystem= new FutureTask(ThreadManager._SYCT);
+           
+            String Resp= Boolean.toString(ThreadManager._SYCT .verify_Table(ThreadManager.Current_Schema, tabla));
+             System.out.println(Resp);
+             System.out.println(tabla);
             if(Resp.compareTo("true")==0 && i==pi){
                 _Plan+="OPEN_TABLE~"+tabla+"\n";
                // tmp+="~"+tabla;
                 i+=2;
             }
-            else if(i==pi+2){
+            else if(Resp.compareTo("true")==0){
                 tmp+="~"+tabla;
+                i+=2;
             }
             else{
                 //error no existe tabla
                 return false;
             }
+           
         }
-        
+        System.out.println(_Plan);
+        System.out.println(tmp);
         _Plan+=tmp+"\n";
         return true;
     }
@@ -295,12 +308,20 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
         return true;
     }
    
-    private boolean checkWhereStatement(int pi,int pj,String pTabla) throws InterruptedException, ExecutionException{
+    private boolean checkWhereStatement(int pi,int pj,String pTabla) throws InterruptedException, ExecutionException, Exception{
         int i=pi;
         int estado=0;
         String columna="";
         String operador="";
-        _Plan+="WHERE~";
+        if(IsUpdate){
+            _Plan+="WHEREU~";
+        }
+        else if(isDelete){
+            _Plan+="WHERED~";
+        }
+        else{
+            _Plan +="WHERE~";
+        }
         while(i<pj){
             if(estado==0){//estado inicial,inicio de where statement
                 String token = _Query[i];
@@ -311,10 +332,9 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
                     //ignora los parantesis y los operadores and y or
                     columna=token;
                     //validar que exista la columna en pTabla
-                    ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, pTabla, columna, null, null, null, null, "V_C");
-                    ThreadManager._Pool.execute(ThreadManager.futureSystem);
-                    ThreadManager.waitSC();
-                    String Resp= (String) ThreadManager.futureSystem.get();
+                    ThreadManager._SYCT = new SystemCatalog();
+                    ThreadManager.futureSystem= new FutureTask(ThreadManager._SYCT);
+                    String Resp= Boolean.toString(ThreadManager._SYCT.verify_Column(ThreadManager.Current_Schema, pTabla, columna));
  
                     if(Resp.compareTo("true")==0){
                         estado=1;
@@ -376,12 +396,12 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
     private boolean createPlan_Drop_DB() throws InterruptedException, ExecutionException{
         int indice = 2;
         String nombre = _Query[indice];
-        
+       
         ThreadManager._SYCT.set_Plan(nombre, null, null, null, null, null, null, "V_S");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
         String Resp= (String) ThreadManager.futureSystem.get();
-        
+       
         if(Resp.compareTo("true")==0){
             _Plan += "DELETE_DB~"+nombre;
             return true;
@@ -397,15 +417,15 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
     }
    
     private boolean createPlan_Start(){
-        //?
+        _Plan+="START";
         return true;
     }
     private boolean createPlan_Stop(){
-        //?
+        _Plan+="STOP";
         return true;
     }
     private boolean createPlan_Get_Status(){
-        //?
+        _Plan+="GET_STATUS";
         return true;
     }
     private boolean createPlan_Display_DB() throws InterruptedException, ExecutionException{
@@ -432,10 +452,10 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
     //DDL Commands
     //**************************************************************************
     private boolean createPlan_Set_DB() throws InterruptedException, ExecutionException{
-        
+       
         int indice = 2;
         String nombre = _Query[indice];
-        
+       
         ThreadManager._SYCT.set_Plan(nombre, null, null, null, null, null, null,"V_S");
         ThreadManager._Pool.execute(ThreadManager.futureSystem);
         ThreadManager.waitSC();
@@ -570,7 +590,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
    
     //DML Commands
     //**************************************************************************
-private boolean createPlan_Select() throws InterruptedException, ExecutionException{
+private boolean createPlan_Select() throws InterruptedException, ExecutionException, Exception{
         int indice = findInQuery("FROM")+1;
         String tabla = _Query[indice];
        
@@ -594,20 +614,18 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
             }
            
         }
+       
         if(!flag){
             return false;
         }
         if(indiceJoin==-1){//select con una tabla
            
-            ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
-            ThreadManager._Pool.execute(ThreadManager.futureSystem);
-            ThreadManager.waitSC();
-            String Resp= (String) ThreadManager.futureSystem.get();
- 
+            ThreadManager._SYCT= new SystemCatalog();
+            ThreadManager.futureSystem= new FutureTask(ThreadManager._SYCT);
+            String Resp= Boolean.toString(ThreadManager._SYCT.verify_Table(ThreadManager.Current_Schema, tabla));
             if(Resp.compareTo("true")==0){
                 flag=true;
                 _Plan += "OPEN_TABLE~"+tabla+"\n";
-                indice++;
             }
             else{
                 return false;
@@ -633,7 +651,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
                     return false;
                 }
             }
-
+ 
         }
         if(indiceGroup!=-1 && flag){//select con group by
             _Plan += "GROUP_BY";
@@ -647,11 +665,9 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
             indiceGroup+=2;
             while(indiceGroup<=fin){
                 String columna = _Query[indiceGroup];
-                ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, columna, null, null, null, null, "V_C");
-                ThreadManager._Pool.execute(ThreadManager.futureSystem);
-                ThreadManager.waitSC();
-                String Resp= (String) ThreadManager.futureSystem.get();
-
+                ThreadManager._SYCT= new SystemCatalog();
+                ThreadManager.futureSystem= new FutureTask(ThreadManager._SYCT);
+                String Resp= Boolean.toString(ThreadManager._SYCT.verify_Column(ThreadManager.Current_Schema, tabla, columna));
                 if(Resp.compareTo("true")==0){
                         _Plan +="~"+columna;
                         indiceGroup+=2;//se salta la coma
@@ -659,10 +675,10 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
                 else{
                     return false;
                 }
-            
+           
             }
             _Plan += "\n";
-
+ 
         }
         if(indiceFor!=-1 && flag){//select con for json/xml
             if(findInQuery("JSON")!=-1){
@@ -672,40 +688,55 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
                 _Plan += "FOR_XML\n";
             }
         }
-
+ 
         String columna;
         String tmp="";
+        System.out.println("plan");
+        System.out.println(_Plan);
         for(int i=1;i<indice-1;i+=1){
             columna = _Query[i];
             if(i==1 && columna.compareTo("*")==0){
+                tmp="ALL";
                 break;
             }
             //validar q exista columna
-            ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, columna, null, null, null, null, "V_C");
-            ThreadManager._Pool.execute(ThreadManager.futureSystem);
-            ThreadManager.waitSC();
-            String Resp= (String) ThreadManager.futureSystem.get();
-
-            if(Resp.compareTo("true")==0){
+            ThreadManager._SYCT = new SystemCatalog();
+            ThreadManager.futureSystem= new FutureTask(ThreadManager._SYCT);
+            String Resp= Boolean.toString(ThreadManager._SYCT.verify_Column(ThreadManager.Current_Schema, tabla, columna));
+ 
+            if(indiceJoin!=-1){//select de un join
+                ThreadManager._SYCT = new SystemCatalog();
+                ThreadManager.futureSystem= new FutureTask(ThreadManager._SYCT);
+                String Resp2= Boolean.toString(ThreadManager._SYCT.verify_Column(ThreadManager.Current_Schema,_Query[indiceJoin+1], columna));
+               
+                if(Resp.compareTo("true")==0 || Resp2.compareTo("true")==0){
+                    tmp +=columna;
+                }
+                else if(columna.compareTo(",")==0){
                 tmp +=columna;
             }
+            }
+            else if(Resp.compareTo("true")==0){
+                tmp +=columna;
+            }
+           
             else if(columna.compareTo(",")==0){
                 tmp +=columna;
             }
-        
+       
             else{
                 return false;
             }
-            
+           
         }
         if(tmp.compareTo("")!=0){
             _Plan+="SELECT~"+tmp;
         }
-
+ 
         return true;    
     }
    
-    private boolean createPlan_Update() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Update() throws InterruptedException, ExecutionException, Exception{
         int indice = 1;
         String tabla = _Query[indice];
        
@@ -720,11 +751,14 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
  
             if(findInQuery("WHERE")!=-1){//select con where
                     int indice2=_Query.length;
-                    if(checkWhereStatement(findInQuery("WHERE")+1,indice2,tabla) 
+                    IsUpdate = true;
+                    if(checkWhereStatement(findInQuery("WHERE")+1,indice2,tabla)
                             && checkSetStatement(findInQuery("SET")+1,findInQuery("WHERE"),tabla)){
+                        IsUpdate = false;
                         return true;
                     }
                     else{
+                        IsUpdate = false;
                         return false;
                     }
                 }
@@ -743,7 +777,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         }
     }  
    
-    private boolean createPlan_Delete() throws InterruptedException, ExecutionException{
+    private boolean createPlan_Delete() throws InterruptedException, ExecutionException, Exception{
         int indice = 2;
         String tabla = _Query[indice];
        
@@ -754,14 +788,17 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
        
         if(Resp.compareTo("true")==0){
             _Plan +="OPEN_TABLE~"+tabla+"\n";
- 
+           
             if(findInQuery("WHERE")!=-1){//select con where
                     int indice2=_Query.length;
+                    isDelete=true;
                     if(checkWhereStatement(findInQuery("WHERE")+1,indice2,tabla)){
                         _Plan+="DELETE";
+                        isDelete=false;
                         return true;
                     }
                     else{
+                        isDelete=false;
                         return false;
                     }
                 }
@@ -823,13 +860,14 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
      * @throws java.util.concurrent.ExecutionException
      */
        
-    public Response createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException{
+    public Response createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException, Exception{
         String tmp = adjustQuery(pQuery);
+        System.out.println(tmp);
         _Query = tmp.split(" ");
         String comando = _Query[0].toUpperCase();
-        String comando2 = _Query[1].toUpperCase();
-        boolean valido = false;
        
+        boolean valido = false;
+ 
         if(comando.compareTo("SELECT")==0){
             valido = createPlan_Select();
         }
@@ -865,7 +903,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         }
        
         if(comando.compareTo("CREATE")==0){
-           
+           String comando2 = _Query[1].toUpperCase();
             if(comando2.compareTo("DATABASE")==0){
                 valido = createPlan_Create_DB();
             }
@@ -878,6 +916,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         }
        
         if(comando.compareTo("DROP")==0){
+            String comando2 = _Query[1].toUpperCase();
             if(comando2.compareTo("DATABASE")==0){
                 valido = createPlan_Drop_DB();
             }
@@ -886,7 +925,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
             }
         }
         if(valido){
-            
+           
             logHandler.getInstance().logExecution_Plan(_Plan);
             Response response = new Response();
              //guardar la variable _Plan en un archivo
@@ -894,7 +933,10 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         }
         else{
             Response response = new Response();
-            response.setState("42601 	A character, token, or clause is invalid or missing.");
+            response.setState("42601    A character, token, or clause is invalid or missing.");
+            ThreadManager._DATA.setState("unsucessful");
+            ThreadManager._DATA.setError("Error:42601. A character, token, or clause is invalid or missing.");
+            ThreadManager._DATA.set_ErrorFlag(true);
             return response;
         }
        

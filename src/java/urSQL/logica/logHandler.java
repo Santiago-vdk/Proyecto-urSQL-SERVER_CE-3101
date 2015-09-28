@@ -5,6 +5,7 @@
  */
 package urSQL.logica;
 
+import NET.sourceforge.BplusJ.BplusJ.hBplusTree;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +19,7 @@ import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.json.JSONException;
@@ -32,6 +34,7 @@ public class logHandler {
     private static logHandler _singleton = new logHandler();
     private String _execPlanDir = "C:\\tmp\\DataBases\\System_Catalog\\";
     private String _rootDir = null;
+    private boolean _treeFlag = false;
 
     private logHandler() {
     }
@@ -70,51 +73,192 @@ public class logHandler {
         String timeStamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
         out.println(String.valueOf(pError) + "~" + timeStamp + "~" + "'" + pAction + "'" + "~" + pStatus + "~" + pDuration);
         out.close();
-        
-        
+
+    }
+
+    public static long folderSize(File directory) {
+        long length = 0;
+        for (File file : directory.listFiles()) {
+            if (file.isFile()) {
+                length += file.length();
+            } else {
+                length += folderSize(file);
+            }
+        }
+        return length;
+    }
+
+    public String structureSize(String pPath) {
+        File fileDir = new File(pPath);
+        //System.out.println(fileDir);
+        long size = -1;
+        if (fileDir.exists()) {
+            size = folderSize(fileDir);
+        }
+        return String.valueOf(size);
     }
 
     
-    public void verifyStructure(String pPath){     
-        /* Estructura interna del SQL
-        -defaultServer
-            -urSQL
-                -DataBases
-                    -db1
-                        *db1_files
-                    -db2
-                        *db2_files
-                    -db3
-                        *db3_files
-                -System_Catalog
-                    *Execution_Plan.txt
-                -Log
-                    *log.txt
+    public JSONObject systemState(String pPath) throws JSONException{
+        JSONObject sysData = new JSONObject();
+        
+        Runtime runtime = Runtime.getRuntime();
+        NumberFormat format = NumberFormat.getInstance();
+
+        //StringBuilder sb = new StringBuilder();
+        long maxMemory = runtime.maxMemory();
+        long allocatedMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+        
+       /* sb.append("free memory: " + format.format(freeMemory / 1024) + "<br/>");
+        sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "<br/>");
+        sb.append("max memory: " + format.format(maxMemory / 1024) + "<br/>");
+        sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "<br/>");
+        
         */
-        _rootDir = pPath;
-        String urSQLPath = pPath + "/urSQL";
+        sysData.put("free_memory", format.format(freeMemory / 1024) + " kb");
+        sysData.put("allocated_memory", format.format(allocatedMemory / 1024) + " kb");
+        sysData.put("max_memory", format.format(maxMemory / 1024) + " kb");
+        sysData.put("total_free_memory", format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + " kb");
+        sysData.put("folder_size", structureSize(pPath));
+        sysData.put("server_status", Facade.getInstance().getOn());
         
-        //Check databases
-        File db_root_folder = new File(urSQLPath + "/DataBases");
-        if(!db_root_folder.exists()){
-            db_root_folder.mkdirs();
-        }
-        
-        //Check sys_catalog
-        File syscatalog_root_folder = new File(urSQLPath + "/DataBases/System_Catalog");
-        if(!syscatalog_root_folder.exists()){
-            syscatalog_root_folder.mkdirs();
-        }
-        
-        //Check log
-        File log_root_folder = new File(urSQLPath + "/Log");
-        if(!log_root_folder.exists()){
-            log_root_folder.mkdirs();
-        }
-        
-        
+        return sysData;
     }
     
+    
+    public void verifyStructure(String pPath) throws Exception {
+        /* Estructura interna del SQL
+         -defaultServer
+         -urSQL
+         -DataBases
+         -db1
+         *db1_files
+         -db2
+         *db2_files
+         -db3
+         *db3_files
+         -System_Catalog
+         *Execution_Plan.txt
+         -Log
+         *log.txt
+         */
+
+        String urSQLPath = pPath.replace("\\", "/") + "/urSQL";
+        _rootDir = pPath;
+
+        //Check databases
+        File db_root_folder = new File(urSQLPath + "/DataBases");
+        if (!db_root_folder.exists()) {
+            db_root_folder.mkdirs();
+        }
+
+        //Check sys_catalog
+        File syscatalog_root_folder = new File(urSQLPath + "/DataBases/System_Catalog");
+        if (!syscatalog_root_folder.exists()) {
+            syscatalog_root_folder.mkdirs();
+        }
+
+        //Check log
+        File log_root_folder = new File(urSQLPath + "/Log");
+        if (!log_root_folder.exists()) {
+            log_root_folder.mkdirs();
+        }
+
+        //Linea para online
+        //String _Dir = logHandler.getInstance().getRootPath() + "/urSQL/";
+        //Linea para offline
+        String _Dir = urSQLPath + "/"; //logHandler.getInstance().getRootPath() + "\\urSQL\\";
+
+        if (!_treeFlag) {
+            File Sys_Schemas_Tree_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree");
+            File Sys_Schemas_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table");
+
+            //Si el .tree no existe o el .table no existe
+            if (!Sys_Schemas_Tree_File.exists() && !Sys_Schemas_Table_File.exists()) {
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6);
+            } //Si el .tree existe y el .table no existe
+            else if (Sys_Schemas_Tree_File.exists() && !Sys_Schemas_Table_File.exists()) {
+                //Borro el que si existe
+                Sys_Schemas_Tree_File.delete();
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6);
+            } //Si el .tree no existe y el table existe
+            else if (!Sys_Schemas_Tree_File.exists() && Sys_Schemas_Table_File.exists()) {
+                //Borro el que si existe
+                Sys_Schemas_Table_File.delete();
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6);
+            } //Si los dos existen
+            else {
+            }
+
+            File Sys_Tables_Tree_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree");
+            File Sys_Tables_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table");
+            //Si el .tree no existe o el .table no existe
+            if (!Sys_Tables_Tree_File.exists() && !Sys_Tables_Table_File.exists()) {
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6);
+            } //Si el .tree existe y el .table no existe
+            else if (Sys_Tables_Tree_File.exists() && !Sys_Tables_Table_File.exists()) {
+                //Borro el que si existe
+                Sys_Tables_Tree_File.delete();
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6);
+
+            } //Si el .tree no existe y el table existe
+            else if (!Sys_Tables_Tree_File.exists() && Sys_Tables_Table_File.exists()) {
+                //Borro el que si existe
+                Sys_Tables_Table_File.delete();
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6);
+
+            } //Si los dos existen
+            else {
+            }
+
+            File Sys_Columns_Tree_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree");
+            File Sys_Columns_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table");
+            //Si el .tree no existe o el .table no existe
+            if (!Sys_Columns_Tree_File.exists() && !Sys_Columns_Table_File.exists()) {
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6);
+            } //Si el .tree existe y el .table no existe
+            else if (Sys_Columns_Tree_File.exists() && !Sys_Columns_Table_File.exists()) {
+                //Borro el que si existe
+                Sys_Columns_Tree_File.delete();
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6);
+
+            } //Si el .tree no existe y el table existe
+            else if (!Sys_Columns_Tree_File.exists() && Sys_Columns_Table_File.exists()) {
+                //Borro el que si existe
+                Sys_Columns_Table_File.delete();
+                hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6);
+
+            } //Si los dos existen
+            else {
+            }
+
+            /* hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
+             _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6);
+            
+             hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
+             _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6);
+            
+             hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
+             _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6);*/
+            _treeFlag = true;
+        }
+
+        new File(_Dir + "DataBases" + "/" + "System_Catalog" + "/" + "Table.txt").createNewFile();
+        new File(_Dir + "DataBases" + "/" + "System_Catalog" + "/" + "List.txt").createNewFile();
+        new File(_Dir + "DataBases" + "/" + "System_Catalog" + "/" + "Execution_Plan.txt").createNewFile();
+
+    }
+
     /**
      *
      * @param pExecutionPlan
@@ -122,10 +266,10 @@ public class logHandler {
      * @throws JSONException
      */
     public void logExecution_Plan(String pExecutionPlan) throws IOException, JSONException {
-        File fileDir = new File(_rootDir + "/urSQL//DataBases/System_Catalog/Execution_Plan.txt");
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, false)));       
+        File fileDir = new File(logHandler.getInstance().getRootPath() + "/urSQL/" + "DataBases" + "/" + "System_Catalog" + "/" + "Execution_Plan.txt");
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, false)));
         String[] string_arr = pExecutionPlan.split("\n");
-        for(int i =0; i < string_arr.length; i++){
+        for (int i = 0; i < string_arr.length; i++) {
             out.println(string_arr[i]);
         }
         out.close();
@@ -151,20 +295,19 @@ public class logHandler {
         object.put("status", parameters[3]);
         object.put("duration", parameters[4]);
 
-        System.out.println(object.toString());
+        //System.out.println(object.toString());
 
         return object.toString();
     }
-    
+
     /**
      *
-     * @return
-     * @throws JSONException
+     * @return @throws JSONException
      * @throws FileNotFoundException
      */
     public String getExecutionPlan() throws JSONException, FileNotFoundException {
-        
-        InputStream inputstream = new FileInputStream(_rootDir + "/urSQL//DataBases/System_Catalog/Execution_Plan.txt");
+
+        InputStream inputstream = new FileInputStream(logHandler.getInstance().getRootPath() + "/urSQL/" + "DataBases" + "/" + "System_Catalog" + "/" + "Execution_Plan.txt");
         String execution_plan = readStream(inputstream);
 
         JSONObject object = new JSONObject();
@@ -173,7 +316,7 @@ public class logHandler {
 
         return object.toString();
     }
-    
+
     /**
      *
      * @param is
@@ -241,10 +384,9 @@ public class logHandler {
             }
         }
     }
-    
-    
-    public String getRootPath(){
+
+    public String getRootPath() {
         return _rootDir;
     }
-    
+
 }

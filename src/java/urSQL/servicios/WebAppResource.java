@@ -1,16 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package urSQL.servicios;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import javax.naming.InitialContext;
+import java.text.NumberFormat;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
@@ -23,9 +15,9 @@ import javax.ws.rs.Produces;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import urSQL.logica.Facade;
+import org.json.simple.parser.JSONParser;
 import urSQL.logica.logHandler;
-import urSQL.threads.ThreadManager;
+import urSQL.logica.Facade;
 
 /**
  * REST Web Service
@@ -45,6 +37,7 @@ public class WebAppResource {
      * Creates a new instance of WebAppResource
      */
     public WebAppResource() {
+
     }
 
     /**
@@ -55,12 +48,11 @@ public class WebAppResource {
      * @throws InterruptedException
      * @throws IOException
      */
-    @POST 
+    @POST
     @Path("/ExecuteQuery")
     @Produces("application/json")
-    @Consumes("application/json") 
-    public String postQuery(String msg) throws JSONException, InterruptedException, IOException {
-
+    @Consumes("application/json")
+    public String postQuery(String msg) throws JSONException, InterruptedException, IOException, Exception {
         /* No borrar
          long startTime = System.nanoTime();
          Thread.sleep(1000);
@@ -72,40 +64,60 @@ public class WebAppResource {
          String path = ctx.getRealPath("/");
          logHandler.getInstance().logEvent(path, false, msg, "executed", String.valueOf(duration));
          */
-        JSONArray matrix = new JSONArray();
+        /*  JSONArray matrix = new JSONArray();
 
-        JSONArray fila1 = new JSONArray();
-        fila1.put("1");
-        fila1.put("2");
-        fila1.put("3");
+         JSONArray fila1 = new JSONArray();
+         fila1.put("1");
+         fila1.put("2");
+         fila1.put("3");
         
         
-        JSONArray fila2 = new JSONArray();
-        fila2.put("4");
-        fila2.put("5");
-        fila2.put("6");
+         JSONArray fila2 = new JSONArray();
+         fila2.put("4");
+         fila2.put("5");
+         fila2.put("6");
         
-        JSONArray fila3 = new JSONArray();
-        fila3.put("7");
-        fila3.put("8");
-        fila3.put("9");
+         JSONArray fila3 = new JSONArray();
+         fila3.put("7");
+         fila3.put("8");
+         fila3.put("9");
         
-        matrix.put(fila1);
-        matrix.put(fila2);
-        matrix.put(fila3);
+         matrix.put(fila1);
+         matrix.put(fila2);
+         matrix.put(fila3);
         
-        JSONArray col_names = new JSONArray();
+         JSONArray col_names = new JSONArray();
         
-        col_names.put("col1");
-        col_names.put("col2");
-        col_names.put("col3");
+         col_names.put("col1");
+         col_names.put("col2");
+         col_names.put("col3");
         
-        JSONObject master = new JSONObject();
+         JSONObject master = new JSONObject();
         
-        master.put("Valores", matrix);
-        master.put("Columnas", col_names);
-        
-        return master.toString();
+         master.put("Valores", matrix);
+         master.put("Columnas", col_names);*/
+
+        org.json.simple.parser.JSONParser parser = new org.json.simple.parser.JSONParser();
+        Object obj = parser.parse(msg);
+        org.json.simple.JSONObject jsonObject = (org.json.simple.JSONObject) obj;
+        String query = (String) jsonObject.get("source-code");
+
+        String result = Facade.getInstance().processQuerry(query);
+
+      //Si en se debe devolver una tabla se cambia bandera en json
+        //Hago loggin de las caracteristicas del objeto respuesta
+      /*
+         {
+         "table":true/false,
+         "data":{data}
+         }
+         */
+        // String res = Facade.getInstance().processQuerry(msg);
+        JSONObject obj2 = new JSONObject();
+        obj2.put("table", "true"); //OJO
+        obj2.put("data", result);
+
+        return obj2.toString();
     }
 
     /**
@@ -119,7 +131,7 @@ public class WebAppResource {
     @GET
     @Path("/data/log")
     @Produces("application/json")
-    public String queryLog(String msg) throws JSONException, IOException, NamingException {
+    public String queryLog(String msg) throws JSONException {
         // Object serverName = new InitialContext().lookup("serverName");
 
         String path = ctx.getRealPath("/");
@@ -133,9 +145,20 @@ public class WebAppResource {
     }
 
     @GET
+    @Path("/server_state")
+    @Produces("application/json")
+    public String getServerState() throws JSONException {
+        String state = String.valueOf(Facade.getInstance().getOn());
+        JSONObject obj = new JSONObject();
+        obj.put("state", state);
+        return obj.toString();
+
+    }
+
+    @GET
     @Path("/data/executionPlan")
     @Produces("application/json")
-    public String getExecPlan(String msg) throws JSONException, IOException, NamingException {
+    public String getExecPlan() throws JSONException, FileNotFoundException {
         // Object serverName = new InitialContext().lookup("serverName");
 
         String plan = logHandler.getInstance().getExecutionPlan();
@@ -149,20 +172,26 @@ public class WebAppResource {
 
     @GET
     @Path("/initialSetup")
-    @Produces("application/json")
+    @Produces("text/html")
     public String contextChecker() {
         try {
             String realPath = ctx.getRealPath("/");
-            realPath = realPath.substring(0, realPath.indexOf("/apps"));
+
+            //Si el server esta online:
+            //realPath = realPath.substring(0, realPath.indexOf("/apps"));
+            //Si el server esta offline
+            realPath = realPath.substring(0, realPath.indexOf("build") - 1);
+            System.out.println(realPath);
+
             logHandler.getInstance().verifyStructure(realPath);
             logHandler.getInstance().logEvent("not-used", false, "START SERVER", "executed", "-");
 
             //Pongo datos en el log para probar
             //
             //Pruebo el plan
-            logHandler.getInstance().logExecution_Plan("asdfasdfasdf\nasdfa");
-
+            //logHandler.getInstance().logExecution_Plan("asdfasdfasdf\nasdfa");
         } catch (Exception e) {
+            e.printStackTrace();
             return "Error generating urSQL Folder Structure.";
         }
 
@@ -173,14 +202,28 @@ public class WebAppResource {
     @Path("/data/status")
     @Produces("application/json")
     public String getStatus() throws JSONException {
-        JSONObject obj = new JSONObject();
+        String realPath = ctx.getRealPath("/");
+
+            //Si el server esta online:
+        //realPath = realPath.substring(0, realPath.indexOf("/apps"));
+
+        //Si el server esta offline
+        realPath = realPath.substring(0, realPath.indexOf("build") - 1);
+        realPath = realPath + "\\urSQL\\";
+
+       /* JSONObject obj = new JSONObject();
 
         obj.put("RuntimeDBProcessor", "Running...");
         obj.put("SystemCatalog", "Running...");
         obj.put("StoredDataManager", "Running...");
-        obj.put("StoredData", "Running...");
+        obj.put("StoredData", "Running...");*/
+        
+        
 
-        return obj.toString();
+        
+       
+        
+        return logHandler.getInstance().systemState(realPath).toString();
     }
 
     @GET
@@ -224,38 +267,26 @@ public class WebAppResource {
         globalarray.put(container);
 
         /////////////////////////////////////////////
-        JSONArray container2 = new JSONArray();
+       /* JSONArray container2 = new JSONArray();
 
-        JSONObject tables2 = new JSONObject();
-        JSONArray tablasdedb2 = new JSONArray();
+         JSONObject tables2 = new JSONObject();
+         JSONArray tablasdedb2 = new JSONArray();
 
-        tablasdedb2.put("Estudiantes2");
-        tablasdedb2.put("Profesores2");
+         tablasdedb2.put("Estudiantes2");
+         tablasdedb2.put("Profesores2");
 
-        tables2.put("tables", tablasdedb2);
+         tables2.put("tables", tablasdedb2);
 
-        JSONObject name2 = new JSONObject();
-        name2.put("name", "db2");
+         JSONObject name2 = new JSONObject();
+         name2.put("name", "db2");
 
-        container2.put(name2);
-        container2.put(tables2);
+         container2.put(name2);
+         container2.put(tables2);
 
-        globalarray.put(container2);
+         globalarray.put(container2);
 
-        System.out.println(globalarray.toString());
+         System.out.println(globalarray.toString());*/
         return globalarray.toString();
     }
-    
-    @GET
-    @Path("/test")
-    @Produces("application/json")
-    public String test() throws JSONException, Exception {
-        Facade facade = new Facade();
-        String t = facade.processQuerry("Start");
-        
-        return t;
-    }
-    
-    
-    
+
 }

@@ -118,90 +118,105 @@ $(document).ready(function () {
 
 
     //Sidebar button
-
     $('#button-start').click(function (e) {
         e.stopPropagation();
-        swal({title: "Starting urSQL, Stand by...",
-            text: '<i class="fa fa-refresh fa-spin fa-5x"></i>',
-            html: true,
-            timer: 2000,
-            showConfirmButton: false
-        });
-        $('#button-start').prop("disabled", true);
-        serverVerify();
-        sendQuery("START");
+        if ($('#button-start').hasClass('disabled')) {
+            e.preventDefault();
+        }
+        else {
+            swal({title: "Starting urSQL, Stand by...",
+                text: '<i class="fa fa-refresh fa-spin fa-5x"></i>',
+                html: true,
+                timer: 2000,
+                showConfirmButton: false
+            });
+            serverVerify();
+            sendQuery("START");
+        }
     });
 
     $('#button-stop').click(function (e) {
         e.stopPropagation();
-
-        swal({title: "Are you sure?",
-            text: "You are stopping urSQL Systems!",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "Yes, stop it!",
-            cancelButtonText: "No, keep rocking!",
-            closeOnConfirm: false,
-            closeOnCancel: false
-        }, function (isConfirm) {
-            if (isConfirm) {
-                swal({title: "Stopping urSQL, Stand by...",
-                    text: '<i class="fa fa-refresh fa-spin fa-5x"></i>',
-                    html: true,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                sendQuery("START");
-        } else {
-                swal("Cancelled", "you are safe :)", "error");
-            }
-        });
+        if ($('#button-stop').hasClass('disabled')) {
+            e.preventDefault();
+        }
+        else {
+            swal({title: "Are you sure?",
+                text: "You are stopping urSQL Systems!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes, stop it!",
+                cancelButtonText: "No, keep rocking!",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    swal({title: "Stopping urSQL, Stand by...",
+                        text: '<i class="fa fa-refresh fa-spin fa-5x"></i>',
+                        html: true,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    sendQuery("STOP");
+                } else {
+                    swal("Cancelled", "you are safe :)", "error");
+                }
+            });
+        }
     });
 
 
     $('#button-createdb').click(function (e) {
         e.stopPropagation();
-        swal({title: "Create Database",
-            text: "Database Name:",
-            type: "input",
-            showCancelButton: true,
-            closeOnConfirm: false,
-            animation: "slide-from-top",
-            inputPlaceholder: ""},
-        function (inputValue) {
-            if (inputValue === false)
-                return false;
-            if (inputValue === "") {
-                swal.showInputError("Please specify a DB name!");
-                return false
-            }
-            swal("Nice!", "New database: " + "'" + inputValue + "'" + " created!", "success");
-            sendQuery("CREATEDATABASE " + inputValue);
-        });
+        if ($('#button-createdb').hasClass('disabled')) {
+            e.preventDefault();
+        } else {
+            swal({title: "Create Database",
+                text: "Database Name:",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                animation: "slide-from-top",
+                inputPlaceholder: ""},
+            function (inputValue) {
+                if (inputValue === false)
+                    return false;
+                if (inputValue === "") {
+                    swal.showInputError("Please specify a DB name!");
+                    return false
+                }
+                swal("Nice!", "New database: " + "'" + inputValue + "'" + " created!", "success");
+                sendQuery("CREATEDATABASE " + inputValue);
+            });
+        }
     });
 
     $('#button-dropdb').click(function (e) {
         e.stopPropagation();
-        swal({title: "Drop Database",
-            text: "Database Name:",
-            type: "input",
-            showCancelButton: true,
-            closeOnConfirm: false,
-            animation: "slide-from-top",
-            inputPlaceholder: ""},
-        function (inputValue) {
-            if (inputValue === false)
-                return false;
-            if (inputValue === "") {
-                swal.showInputError("Please specify a DB name!");
-                return false;
-            }
-            swal("Done!", "Database: " + "'" + inputValue + "'" + " dropped!", "success");
-            sendQuery("DROPDATABASE " + inputValue);
-        });
+        if ($('#button-dropdb').hasClass('disabled')) {
+            e.preventDefault();
+        } else {
+            swal({title: "Drop Database",
+                text: "Database Name:",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                animation: "slide-from-top",
+                inputPlaceholder: ""},
+            function (inputValue) {
+                if (inputValue === false)
+                    return false;
+                if (inputValue === "") {
+                    swal.showInputError("Please specify a DB name!");
+                    return false;
+                }
+                swal("Done!", "Database: " + "'" + inputValue + "'" + " dropped!", "success");
+                sendQuery("DROPDATABASE " + inputValue);
+            });
+        }
     });
-    
+
     $('#button-statusdb').click(function (e) {
         e.stopPropagation();
         var statusJSON = getDBStatus();
@@ -209,47 +224,81 @@ $(document).ready(function () {
 
     $('#button-listdb').click(function (e) {
         e.stopPropagation();
-        var databases = getDataBases();
+        if ($('#button-listdb').hasClass('disabled')) {
+            e.preventDefault();
+        } else {
+            var databases = getDataBases();
+        }
+
+
     });
-    
-    
+
+
     $('#button-displaydb').click(function (e) {
         e.stopPropagation();
-        bootbox.alert('<html><h1>Display DB</h1>');
+        if ($('#button-displaydb').hasClass('disabled')) {
+            e.preventDefault();
+        } else {
+            bootbox.alert('<html><h1>Display DB</h1>');
+        }
     });
-    
+
     $('#button-refresh').click(function (e) {
         e.stopPropagation();
         refreshTree();
-        
+
     });
 
     $('#plan-log').click(function (e) {
         e.stopPropagation();
-        //ExecuteGetExecutionPlan
-        var exec_plan = getExecPlan();
+        if ($('#plan-log').hasClass('disabled')) {
+            e.preventDefault();
+        } else {
+            //ExecuteGetExecutionPlan
+            var exec_plan = getExecPlan();
+        }
     });
 });
 
 
-function showStatus(RuntimeDBProcessor,SystemCatalog,StoredDataManager,StoredData) {
-    var message =  '<html><h2>System Components:</h2><ul>' ;
-    
-    message = message + '<li>RunTime DB Processor, '+ RuntimeDBProcessor + '</li>';
-    message = message + '<li>System Catalog, '+ SystemCatalog + '</li>';
-    message = message + '<li>Stored Data Manager, '+ StoredDataManager + '</li>';
-    message = message + '<li>Stored Data, '+ StoredData + '</li>';
-    
-    message = message + '</ul></html>';
+function showStatus(data) {
+    var message = '<html><h2 align-text="center">urSQL - System Status</h2>';
+    message = message + '<hr>';
+
+    if (data.server_status === "true") {
+        message = message + '<h3>Server Status, ' + "Ready!" + '</h3>';
+        message = message + '<ul><li>RunTime DB Processor, ' + "running..." + '</li>';
+        message = message + '<li>System Catalog, ' + "running..." + '</li>';
+        message = message + '<li>Stored Data Manager, ' + "running..." + '</li>';
+        message = message + '<li>Stored Data, ' + "running..." + '</li></ul>';
+    } else {
+        message = message + '<h3>Server Status: ' + "Stand by..." + '</h3>';
+        message = message + '<ul><li>RunTime DB Processor, ' + "stopped." + '</li>';
+        message = message + '<li>System Catalog, ' + "stopped." + '</li>';
+        message = message + '<li>Stored Data Manager, ' + "stopped." + '</li>';
+        message = message + '<li>Stored Data, ' + "stopped." + '</li></ul>';
+    }
+    message = message + '<hr>';
+    message = message + '<h3>Server Status, ' + "Current JVM Status" + '</h3>';
+    message = message + '<ul><li>Free Memory: ' + data.free_memory + '</li>';
+    message = message + '<li>Allocated Memory: ' + data.allocated_memory + '</li>';
+    message = message + '<li>Max Memory: ' + data.max_memory + '</li>';
+    message = message + '<li>Total Free Memory: ' + data.total_free_memory + '</li></ul>';
+
+    message = message + '<hr>';
+    message = message + '<h3>Storage Status, ' + "Current Database Size" + '</h3>';
+    message = message + '<ul><li>Used Storage: ' + data.folder_size + ' kb</li>';
+
+    message = message + '</html>';
     bootbox.alert(message);
 }
 
 
-function showDataBases(databases){
+function showDataBases(databases) {
     //bootbox.alert('<html><h1>' + databases + '</h1>');
-    var message =  '<html><h2>Database List:</h2><ul>' ;
-    for(var i = 0; i < databases.length; i++){
-       message =  message  + '<li>' + databases[i] + '</li>';
+    var message = '<html><h2>Database List:</h2><ul>';
+    for (var i = 0; i < databases.length; i++) {
+        message = message + '<li>' + databases[i] + '</li>';
     }
     message = message + '</ul></html>';
     bootbox.alert(message);
@@ -257,6 +306,35 @@ function showDataBases(databases){
 
 
 
-function showExecPlan(exec_plan){
-    bootbox.alert('<html><h1>' + exec_plan + '</h1>');
+function showExecPlan(exec_plan) {
+    bootbox.alert('<html><p>' + exec_plan + '</p>');
+}
+
+
+//Check if server is started or not.
+function changeServerState(data) {
+    var server_state = data.state;
+    if (server_state === "false") {
+        $('#button-start').removeClass("disabled"); //Activa
+        $('#button-stop').addClass("disabled");
+
+        $('#button-listdb').addClass("disabled");
+        $('#button-createdb').addClass("disabled");
+        $('#button-dropdb').addClass("disabled");
+        $('#button-displaydb').addClass("disabled");
+        $('#plan-log').addClass("disabled");
+        $('#execute-query').addClass("disabled");
+        
+    } else {
+        $('#button-start').addClass("disabled");
+        $('#button-stop').removeClass("disabled");
+
+        $('#button-listdb').removeClass("disabled");
+        $('#button-createdb').removeClass("disabled");
+        $('#button-dropdb').removeClass("disabled");
+        $('#button-displaydb').removeClass("disabled");
+        $('#plan-log').removeClass("disabled");
+        $('#execute-query').removeClass("disabled");
+    }
+
 }

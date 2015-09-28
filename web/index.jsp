@@ -74,7 +74,7 @@
 
     </head>
     <body>
-
+<!--
         <div class="page-cover" id="page" >
 
         </div>
@@ -83,28 +83,27 @@
             <div class="progress-bar progress-bar-warning progress-bar-striped active prog" id="barra" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width:0%;">
 
             </div>
-        </div>
-
+        </div> 
+-->
         <div class="wrapper" id="wrapper">
             <div class="side-bar" id="sidebar">
                 <div class="side-box" id="sidebox">
-                    <a href="#" class="button button-action" style="width:100%;" id="button-start">START <i class="fa fa-play"></i></a>
+                    <a href="#" class="button button-action disabled" style="width:100%;" id="button-start">START <i class="fa fa-play"></i></a>
                     <hr class="hr"></hr>              
-                    <a href="#" class="button button-caution" style="width:100%;" id="button-stop">STOP <i class="fa fa-stop"></i></i></a>
+                    <a href="#" class="button button-caution disabled" style="width:100%;" id="button-stop">STOP <i class="fa fa-stop"></i></i></a>
                     <hr class="hr"></hr>   
-                    <a href="#" class="button button-primary" style="width:100%;" id="button-createdb">CREATE DB <i class="fa fa-database"></i></a>
+                    <a href="#" class="button button-primary disabled" style="width:100%;" id="button-createdb">CREATE DB <i class="fa fa-database"></i></a>
                     <hr class="hr"></hr>   
-                    <a href="#" class="button button-highlight" style="width:100%;" id="button-dropdb">DROP DB <i class="fa fa-trash-o"></i></a>
+                    <a href="#" class="button button-highlight disabled" style="width:100%;" id="button-dropdb">DROP DB <i class="fa fa-trash-o"></i></a>
                     <hr class="hr"></hr>   
-                    <a href="#" class="button button-normal" style="width:100%;" id="button-statusdb">STATUS <i class="fa fa-bug"></i></i></a>
+                    <a href="#" class="button button-normal" style="width:100%;" id="button-statusdb">STATUS <i class="fa fa-bug" style="color: #008F00"></i></i></a>
                     <hr class="hr"></hr>   
-                    <a href="#" class="button button-normal" style="width:100%;" id="button-listdb">LIST DB <i class="fa fa-list"></i></a>
+                    <a href="#" class="button button-normal disabled" style="width:100%;" id="button-listdb">LIST DB <i class="fa fa-list"></i></a>
                     <hr class="hr"></hr>   
-                    <a href="#" class="button button-normal" style="width:100%;" id="button-displaydb">DISPLAY DB <i class="fa fa-desktop"></i></a>
+                    <a href="#" class="button button-normal disabled" style="width:100%;" id="button-displaydb">DISPLAY DB <i class="fa fa-desktop"></i></a>
                 </div>
                 <div class="vertical-separator-sidebar" id="side-horizontal-separator"></div>
                 <div class="side-box" id="tree-box">
-
                     <div id="jstree">
                         <ul>
                             <li id="root" data-jstree='{"icon":"//jstree.com/tree.png"}'><a>Schemas</a></li>
@@ -124,7 +123,7 @@
                     <div class="query-content-toolbar">
                         <button class="btn btn-sq-lg btn-primary" id="expand-query"><i id="button-down-query" class="fa fa-caret-down "></i></button>
                         <hr class="hr"></hr>   
-                        <button class="btn btn-sq-lg btn-success" id="execute-query"  data-content="Run Query!" rel="popover" data-placement="left" data-trigger="hover"><i class="fa fa-check" id="execute-query-icon"></i></button>
+                        <button class="btn btn-sq-lg btn-success disabled" id="execute-query"  data-content="Run Query!" rel="popover" data-placement="left" data-trigger="hover"><i class="fa fa-check" id="execute-query-icon"></i></button>
                         <!-- <hr class="hr"></hr>   
                          <button class="btn btn-sq-lg btn-warning" id="executing-query" data-content="Executing Query!" rel="popover" data-placement="left" data-trigger="hover" hidden><i class="fa fa-cog fa-spin"></i></button> -->
                     </div>
@@ -154,10 +153,9 @@
                     <div class="log-content-toolbar">
                         <button class="btn btn-sq-lg btn-primary" id="expand-log"><i id="button-down-log" class="fa fa-caret-down"></i></button>
                         <hr class="hr"></hr>   
-                        <button class="btn btn-sq-lg btn-default" id="plan-log" data-content="Execution plan" rel="popover" data-placement="left" data-trigger="hover"><i class="fa fa-history"></i></button>
+                        <button class="btn btn-sq-lg btn-default disabled" id="plan-log" data-content="Execution plan" rel="popover" data-placement="left" data-trigger="hover"><i class="fa fa-history"></i></button>
                         <hr class="hr"></hr>
                         <button class="btn btn-sq-lg btn-danger" id="errase-log"><i class="fa fa-eraser"></i></button>
-
                     </div>
                     <div class="log-content-table">
                         <table id="log-tabla" class="display cell-border" cellspacing="0">

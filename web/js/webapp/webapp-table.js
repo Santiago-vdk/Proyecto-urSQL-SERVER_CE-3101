@@ -4,6 +4,9 @@ var counter = 0;
    var aryJSONColTable = [];
        var arregloColumnas = [];
 $(document).ready(function () {
+    
+    
+    
     /*$('#example').DataTable();
      $('#example')
      .removeClass('display')
@@ -42,12 +45,20 @@ $(document).ready(function () {
         "bAutoWidth": false
     });
 
+
 });
 
 function updateDataTable(data){
     
+    if(data.table === "false"){
+        console.log("table has no data");
+    }
+    else {
+        console.log("table has data");
+    }
+    
+    /*
     //dataTabla.destroy();
-   
     arregloColumnas = [];
     aryJSONColTable = [];
     
@@ -85,14 +96,14 @@ function updateDataTable(data){
     
 
 
-    /*
-    dataTabla.row.add({
+    
+    dataTabla.row.add({//Quitar
         "col1": "1",
         "col2": "2",
         "col3": "3"
-    }).draw(false);*/
+    }).draw(false);
     
-    
+    */
 }
 
 function addRow(error, time, action, status, duration) {
@@ -115,6 +126,7 @@ function addRow(error, time, action, status, duration) {
     })
     .draw(false);
     counter++;
+    logTabla.state.save();
 
 }
 
