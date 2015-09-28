@@ -6,6 +6,7 @@
 package urSQL.servicios;
 
 import java.io.IOException;
+import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
@@ -15,6 +16,7 @@ import javax.ws.rs.Produces;
 import org.json.JSONException;
 import org.json.JSONObject;
 import urSQL.logica.Facade;
+import urSQL.logica.logHandler;
 import urSQL.threads.Response;
 
 /**
@@ -29,6 +31,10 @@ public class APIResource {
     private UriInfo context;
 
     private boolean _flagStarted = false;
+    
+    
+    @Context
+    ServletContext ctx;
 
     /**
      * Creates a new instance of APIResource
@@ -43,6 +49,8 @@ public class APIResource {
     public String postQuery(String msg) throws JSONException, InterruptedException, IOException, Exception {
         try {
             if (!_flagStarted) {
+                contextCheckerAPI();
+                Thread.sleep(1500);
                 Facade.getInstance().processQuerry("START");
                 _flagStarted = true;
             }
@@ -60,19 +68,53 @@ public class APIResource {
 
             JSONObject obj2 = new JSONObject();
 
-            //Si no hay datos no los devuelvo
+            //Si hay datos no los devuelvo
             if (rs.get_TableFlag()) {
-                obj2.put("Valores", rs.getTabla());
+                obj2.put("table", String.valueOf(rs.get_TableFlag())); 
+                obj2.put("data", rs.getTabla());
+                
+            }
+            else {
+                obj2.put("table", String.valueOf(rs.get_TableFlag())); 
+                obj2.put("datas", "none");
             }
 
-            obj2.put("table", rs.get_TableFlag()); //OJO
-            obj2.put("Valores", "none");
 
             return obj2.toString();
         } catch (Exception e) {
             return "Server Exception, could be malformed JSON";
         }
 
+    }
+    
+    public String contextCheckerAPI() {
+        try {
+            String realPath = ctx.getRealPath("/");
+
+            //Si el server esta online:
+           // realPath = realPath.substring(0, realPath.indexOf("urSQL/apps"));
+            
+            //Si el server esta offline
+            
+           realPath = realPath.substring(0, realPath.indexOf("build") - 1);
+   
+            logHandler.getInstance().verifyStructure(realPath);
+            logHandler.getInstance().logEvent("not-used", false, "START SERVER", "executed", "-");
+
+            //Pongo datos en el log para probar
+            //
+            //Pruebo el plan
+            //logHandler.getInstance().logExecution_Plan("asdfasdfasdf\nasdfa");
+            
+            
+            //_flagStarted = true;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error generating urSQL Folder Structure.";
+        }
+
+        return "true";
     }
     
     

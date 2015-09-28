@@ -48,7 +48,7 @@ public class Table {
     public void charge_Table() throws Exception{
         _Values.removeAll(_Values);
         //System.out.println(_Dir+_Schema+"/"+_Table+".tree" + "   " + _Dir+_Schema+"/"+_Table+".table");
-        System.out.println("HERE " + _Dir+_Schema+"/"+_Table+".tree" + "   " + _Dir+_Schema+"/"+_Table+".table");
+       // System.out.println("HERE " + _Dir+_Schema+"/"+_Table+".tree" + "   " + _Dir+_Schema+"/"+_Table+".table");
         
         BplusTree A= hBplusTree.ReadOnly(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table");

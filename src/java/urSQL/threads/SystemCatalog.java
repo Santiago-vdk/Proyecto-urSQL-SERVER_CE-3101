@@ -384,7 +384,7 @@ public class SystemCatalog implements Callable{
      * @throws Exception
      */
     public void elim_Table(String pSchema, String pTable) throws Exception{
-        System.out.println("entre");
+       // System.out.println("entre");
         Condition A= new Condition("Table",null,pTable,"=");
         Condition B= new Condition("Schema",null,pSchema,"=");
         List<Condition> X= new ArrayList<Condition>();
@@ -415,7 +415,7 @@ public class SystemCatalog implements Callable{
  
         String Result="false";
        
-        System.out.println("jsdhhsdjjsh");
+        //System.out.println("jsdhhsdjjsh");
            
             if (_Mode.equals("V_TY")){
                 Result = verify_Column_Type(_Schema,_Table, _Column);
@@ -441,7 +441,7 @@ public class SystemCatalog implements Callable{
             }
                
             else if (_Mode.equals("I_S")){
-                System.out.println("jsdhhsdjjsh");
+                //System.out.println("jsdhhsdjjsh");
                 insert_Schema(_Schema);
                 Result= "true";
             }

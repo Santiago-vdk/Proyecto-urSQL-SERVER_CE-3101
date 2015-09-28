@@ -178,21 +178,21 @@ public class logHandler {
 
             //Si el .tree no existe o el .table no existe
             if (!Sys_Schemas_Tree_File.exists() && !Sys_Schemas_Table_File.exists()) {
-                System.out.println("1");
+               // System.out.println("1");
                 
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
                         _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6).Shutdown();
                 
             } //Si el .tree existe y el .table no existe
             else if (Sys_Schemas_Tree_File.exists() && !Sys_Schemas_Table_File.exists()) {
-                System.out.println("2");
+                //System.out.println("2");
                 //Borro el que si existe
                 Sys_Schemas_Tree_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
                         _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6).Shutdown();
             } //Si el .tree no existe y el table existe
             else if (!Sys_Schemas_Tree_File.exists() && Sys_Schemas_Table_File.exists()) {
-                System.out.println("3");
+                //System.out.println("3");
                 //Borro el que si existe
                 Sys_Schemas_Table_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
@@ -206,13 +206,13 @@ public class logHandler {
             File Sys_Tables_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table");
             //Si el .tree no existe o el .table no existe
             if (!Sys_Tables_Tree_File.exists() && !Sys_Tables_Table_File.exists()) {
-                System.out.println("4");
+               // System.out.println("4");
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
                         _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6).Shutdown();
-                System.out.println("4 asdf");
+               // System.out.println("4 asdf");
             } //Si el .tree existe y el .table no existe
             else if (Sys_Tables_Tree_File.exists() && !Sys_Tables_Table_File.exists()) {
-                System.out.println("5");
+               // System.out.println("5");
                 //Borro el que si existe
                 Sys_Tables_Tree_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
@@ -234,10 +234,10 @@ public class logHandler {
             File Sys_Columns_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table");
             //Si el .tree no existe o el .table no existe
             if (!Sys_Columns_Tree_File.exists() && !Sys_Columns_Table_File.exists()) {
-                System.out.println("7");
+                //System.out.println("7");
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
                         _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6).Shutdown();
-                System.out.println("asdf");
+               // System.out.println("asdf");
             } //Si el .tree existe y el .table no existe
             else if (Sys_Columns_Tree_File.exists() && !Sys_Columns_Table_File.exists()) {
                 System.out.println("8");
@@ -248,7 +248,7 @@ public class logHandler {
 
             } //Si el .tree no existe y el table existe
             else if (!Sys_Columns_Tree_File.exists() && Sys_Columns_Table_File.exists()) {
-                System.out.println("9");
+                //System.out.println("9");
                 //Borro el que si existe
                 Sys_Columns_Table_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",

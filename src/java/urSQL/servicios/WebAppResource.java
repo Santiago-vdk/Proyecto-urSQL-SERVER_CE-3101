@@ -3,6 +3,8 @@ package urSQL.servicios;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
@@ -16,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
+import urSQL.Objects.Table;
 import urSQL.logica.logHandler;
 import urSQL.logica.Facade;
 import urSQL.threads.Response;
@@ -29,7 +32,7 @@ import urSQL.threads.Response;
 public class WebAppResource {
 
     private boolean _flagStarted = false;
-    
+
     @Context
     private UriInfo context;
 
@@ -56,10 +59,10 @@ public class WebAppResource {
     @Produces("application/json")
     @Consumes("application/json")
     public String postQuery(String msg) throws JSONException, InterruptedException, IOException, Exception {
-    /*    if(!_flagStarted){
-            contextChecker();
-            _flagStarted = true;
-        }*/
+        /*    if(!_flagStarted){
+         contextChecker();
+         _flagStarted = true;
+         }*/
         /* No borrar
          long startTime = System.nanoTime();
          Thread.sleep(1000);
@@ -79,26 +82,23 @@ public class WebAppResource {
         Facade.getInstance().processQuerry(query);
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1000000;  //divide by 1000000 to get milliseconds.
-        
+
         Response rs = Facade.getInstance().getResponse();
-        
-        logHandler.getInstance().logEvent("not needed",rs.get_ErrorFlag() , rs.getConsulta(), rs.getState(), String.valueOf(duration) + " ms");
-        
+
+        logHandler.getInstance().logEvent("not needed", rs.get_ErrorFlag(), rs.getConsulta(), rs.getState(), String.valueOf(duration) + " ms");
+
         JSONObject obj2 = new JSONObject();
-        
-        System.out.println(rs.get_TableFlag());
-        
+
         obj2.put("table", rs.get_TableFlag()); //OJO
-        
+
         //Si no hay datos no los devuelvo
-        if(rs.get_TableFlag()){
+        if (rs.get_TableFlag()) {
             obj2.put("Valores", rs.getTabla());
             obj2.put("Columnas", rs.getColumnas());
-        }
-        else {
-        
-        obj2.put("Columnas","none");
-        obj2.put("Valores","none");
+        } else {
+
+            obj2.put("Columnas", "none");
+            obj2.put("Valores", "none");
         }
 
         return obj2.toString();
@@ -123,9 +123,6 @@ public class WebAppResource {
 
         return JSONResponse;
 
-        /* logHandler.getInstance().logEvent("dp", false, "asdf", "executed", "Test");
-        
-         logHandler.getInstance().logExecution_Plan("asdfasdfasdf\nasdfa");*/
     }
 
     @GET
@@ -149,9 +146,6 @@ public class WebAppResource {
 
         return plan;
 
-        /* logHandler.getInstance().logEvent("dp", false, "asdf", "executed", "Test");
-        
-         logHandler.getInstance().logExecution_Plan("asdfasdfasdf\nasdfa");*/
     }
 
     @GET
@@ -159,15 +153,14 @@ public class WebAppResource {
     @Produces("text/html")
     public String contextChecker() {
         try {
+
             String realPath = ctx.getRealPath("/");
 
             //Si el server esta online:
-           // realPath = realPath.substring(0, realPath.indexOf("urSQL/apps"));
-            
+            // realPath = realPath.substring(0, realPath.indexOf("urSQL/apps"));
             //Si el server esta offline
-            
-           realPath = realPath.substring(0, realPath.indexOf("build") - 1);
-   
+            realPath = realPath.substring(0, realPath.indexOf("build") - 1);
+
             logHandler.getInstance().verifyStructure(realPath);
             logHandler.getInstance().logEvent("not-used", false, "START SERVER", "executed", "-");
 
@@ -175,9 +168,7 @@ public class WebAppResource {
             //
             //Pruebo el plan
             //logHandler.getInstance().logExecution_Plan("asdfasdfasdf\nasdfa");
-            
-            
-            //_flagStarted = true;
+            _flagStarted = true;
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -193,7 +184,7 @@ public class WebAppResource {
     public String getStatus() throws JSONException {
         String realPath = ctx.getRealPath("/");
 
-            //Si el server esta online:
+        //Si el server esta online:
         //realPath = realPath.substring(0, realPath.indexOf("/apps"));
         //Si el server esta offline
         realPath = realPath.substring(0, realPath.indexOf("build") - 1);
@@ -227,48 +218,68 @@ public class WebAppResource {
     @GET
     @Path("/data/refreshSchemaTree")
     @Produces("application/json")
-    public String getCurrentSchemaTree() throws JSONException {
-        JSONArray globalarray = new JSONArray();
+    public String getCurrentSchemaTree() throws JSONException, Exception {
+       // System.out.println("tree schema");
+       // if (_flagStarted) {
 
-        JSONArray container = new JSONArray();
+            JSONArray globalarray = new JSONArray();
+            JSONArray container = new JSONArray();
 
-        JSONObject tables = new JSONObject();
-        JSONArray tablasdedb1 = new JSONArray();
+            Table A = new Table();
+            A.setTable("System_Catalog", "Sys_Schemas");
+            A.charge_Table();
+            Table B = new Table();
+            B.setTable("System_Catalog", "Sys_Tables");
+            List<String> C = new ArrayList<String>();
+            C.add("Schema");
+            C.add("Table");
+            B.setColumns(C);
+            B.charge_Table();
+            for (int i = 0; i < A.get_Values().size(); i++) {
+                B.elim_fila("Schema", null, (String) A.get_Values().get(i).get(0), "=");
+                JSONObject db = new JSONObject();
+                JSONArray tablasdedb1 = new JSONArray();
+                JSONObject name = new JSONObject();
 
-        tablasdedb1.put("Estudiantes");
-        tablasdedb1.put("Profesores");
+                name.put("name", A.get_Values().get(i).get(0));
+                for (int j = 0; j < B.get_Values().size(); j++) {
 
-        tables.put("tables", tablasdedb1);
+                    tablasdedb1.put((String) B.get_Values().get(j).get(1));
 
-        JSONObject name = new JSONObject();
-        name.put("name", "db1");
-
-        container.put(name);
-        container.put(tables);
-
-        globalarray.put(container);
+                }
+                B.charge_Table();
+                db.put("tables", tablasdedb1);
+                container.put(name);
+                container.put(db);
+            }
+            //System.out.println(globalarray);
+            
+            globalarray.put(container);
 
         /////////////////////////////////////////////
        /* JSONArray container2 = new JSONArray();
 
-         JSONObject tables2 = new JSONObject();
-         JSONArray tablasdedb2 = new JSONArray();
+             JSONObject tables2 = new JSONObject();
+             JSONArray tablasdedb2 = new JSONArray();
 
-         tablasdedb2.put("Estudiantes2");
-         tablasdedb2.put("Profesores2");
+             tablasdedb2.put("Estudiantes2");
+             tablasdedb2.put("Profesores2");
 
-         tables2.put("tables", tablasdedb2);
+             tables2.put("tables", tablasdedb2);
 
-         JSONObject name2 = new JSONObject();
-         name2.put("name", "db2");
+             JSONObject name2 = new JSONObject();
+             name2.put("name", "db2");
 
-         container2.put(name2);
-         container2.put(tables2);
+             container2.put(name2);
+             container2.put(tables2);
 
-         globalarray.put(container2);
+             globalarray.put(container2);
 
-         System.out.println(globalarray.toString());*/
-        return globalarray.toString();
+             System.out.println(globalarray.toString());*/
+            return globalarray.toString();
+      /*  }
+        return null;
+    }*/
     }
 
 }
