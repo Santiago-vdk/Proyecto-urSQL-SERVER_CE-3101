@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import urSQL.logica.logHandler;
 import urSQL.logica.Facade;
+import urSQL.threads.Response;
 
 /**
  * REST Web Service
@@ -27,6 +28,8 @@ import urSQL.logica.Facade;
 @Path("webapp")
 public class WebAppResource {
 
+    private boolean _flagStarted = false;
+    
     @Context
     private UriInfo context;
 
@@ -53,69 +56,45 @@ public class WebAppResource {
     @Produces("application/json")
     @Consumes("application/json")
     public String postQuery(String msg) throws JSONException, InterruptedException, IOException, Exception {
+    /*    if(!_flagStarted){
+            contextChecker();
+            _flagStarted = true;
+        }*/
         /* No borrar
          long startTime = System.nanoTime();
          Thread.sleep(1000);
         
-        
          long endTime = System.nanoTime();
          long duration = (endTime - startTime)/1000000;  //divide by 1000000 to get milliseconds.
-
          String path = ctx.getRealPath("/");
-         logHandler.getInstance().logEvent(path, false, msg, "executed", String.valueOf(duration));
          */
-        /*  JSONArray matrix = new JSONArray();
-
-         JSONArray fila1 = new JSONArray();
-         fila1.put("1");
-         fila1.put("2");
-         fila1.put("3");
-        
-        
-         JSONArray fila2 = new JSONArray();
-         fila2.put("4");
-         fila2.put("5");
-         fila2.put("6");
-        
-         JSONArray fila3 = new JSONArray();
-         fila3.put("7");
-         fila3.put("8");
-         fila3.put("9");
-        
-         matrix.put(fila1);
-         matrix.put(fila2);
-         matrix.put(fila3);
-        
-         JSONArray col_names = new JSONArray();
-        
-         col_names.put("col1");
-         col_names.put("col2");
-         col_names.put("col3");
-        
-         JSONObject master = new JSONObject();
-        
-         master.put("Valores", matrix);
-         master.put("Columnas", col_names);*/
 
         org.json.simple.parser.JSONParser parser = new org.json.simple.parser.JSONParser();
         Object obj = parser.parse(msg);
         org.json.simple.JSONObject jsonObject = (org.json.simple.JSONObject) obj;
         String query = (String) jsonObject.get("source-code");
 
-        String result = Facade.getInstance().processQuerry(query);
+        long startTime = System.nanoTime();
 
-      //Si en se debe devolver una tabla se cambia bandera en json
-        //Hago loggin de las caracteristicas del objeto respuesta
-      /*
-         {
-         "table":true/false,
-         "data":{data}
-         }
-         */
-        // String res = Facade.getInstance().processQuerry(msg);
+        Facade.getInstance().processQuerry(query);
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1000000;  //divide by 1000000 to get milliseconds.
+        
+        Response rs = Facade.getInstance().getResponse();
+        
+        logHandler.getInstance().logEvent("not needed",rs.get_ErrorFlag() , rs.getConsulta(), rs.getState(), String.valueOf(duration) + " ms");
+        
         JSONObject obj2 = new JSONObject();
-        obj2.put("table", "true"); //OJO
-        obj2.put("data", result);
+        
+        //Si no hay datos no los devuelvo
+        if(rs.get_TableFlag()){
+            obj2.put("Valores", rs.getTabla());
+            obj2.put("Columnas", rs.getColumnas());
+        }
+        
+        obj2.put("table", rs.get_TableFlag()); //OJO
+        obj2.put("Columnas","none");
+        obj2.put("Valores","none");
 
         return obj2.toString();
     }
@@ -178,11 +157,12 @@ public class WebAppResource {
             String realPath = ctx.getRealPath("/");
 
             //Si el server esta online:
-            //realPath = realPath.substring(0, realPath.indexOf("/apps"));
+           // realPath = realPath.substring(0, realPath.indexOf("urSQL/apps"));
+            
             //Si el server esta offline
-            realPath = realPath.substring(0, realPath.indexOf("build") - 1);
-            System.out.println(realPath);
-
+            
+           realPath = realPath.substring(0, realPath.indexOf("build") - 1);
+   
             logHandler.getInstance().verifyStructure(realPath);
             logHandler.getInstance().logEvent("not-used", false, "START SERVER", "executed", "-");
 
@@ -190,6 +170,10 @@ public class WebAppResource {
             //
             //Pruebo el plan
             //logHandler.getInstance().logExecution_Plan("asdfasdfasdf\nasdfa");
+            
+            
+            //_flagStarted = true;
+            
         } catch (Exception e) {
             e.printStackTrace();
             return "Error generating urSQL Folder Structure.";
@@ -206,23 +190,16 @@ public class WebAppResource {
 
             //Si el server esta online:
         //realPath = realPath.substring(0, realPath.indexOf("/apps"));
-
         //Si el server esta offline
         realPath = realPath.substring(0, realPath.indexOf("build") - 1);
         realPath = realPath + "\\urSQL\\";
 
-       /* JSONObject obj = new JSONObject();
+        /* JSONObject obj = new JSONObject();
 
-        obj.put("RuntimeDBProcessor", "Running...");
-        obj.put("SystemCatalog", "Running...");
-        obj.put("StoredDataManager", "Running...");
-        obj.put("StoredData", "Running...");*/
-        
-        
-
-        
-       
-        
+         obj.put("RuntimeDBProcessor", "Running...");
+         obj.put("SystemCatalog", "Running...");
+         obj.put("StoredDataManager", "Running...");
+         obj.put("StoredData", "Running...");*/
         return logHandler.getInstance().systemState(realPath).toString();
     }
 

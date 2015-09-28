@@ -1,43 +1,7 @@
-false~19:20:12~'START SERVER'~executed~-
-false~19:20:15~'START SERVER'~executed~-
-false~21:28:16~'START SERVER'~executed~-
-false~21:28:23~'START SERVER'~executed~-
-false~21:31:38~'START SERVER'~executed~-
-false~21:31:43~'START SERVER'~executed~-
-false~21:32:10~'START SERVER'~executed~-
-false~21:36:16~'START SERVER'~executed~-
-false~21:36:31~'START SERVER'~executed~-
-false~21:36:59~'START SERVER'~executed~-
-false~21:37:02~'START SERVER'~executed~-
-false~21:40:56~'START SERVER'~executed~-
-false~21:43:28~'START SERVER'~executed~-
-false~21:44:01~'START SERVER'~executed~-
-false~21:44:06~'START SERVER'~executed~-
-false~21:44:06~'START SERVER'~executed~-
-false~21:44:07~'START SERVER'~executed~-
-false~21:52:16~'START SERVER'~executed~-
-false~21:52:20~'START SERVER'~executed~-
-false~21:52:41~'START SERVER'~executed~-
-false~21:52:44~'START SERVER'~executed~-
-false~21:53:23~'START SERVER'~executed~-
-false~21:53:59~'START SERVER'~executed~-
-false~21:55:24~'START SERVER'~executed~-
-false~21:55:34~'START SERVER'~executed~-
-false~22:00:29~'START SERVER'~executed~-
-false~22:14:05~'START SERVER'~executed~-
-false~22:15:48~'START SERVER'~executed~-
-false~22:16:09~'START SERVER'~executed~-
-false~22:17:46~'START SERVER'~executed~-
-false~22:22:14~'START SERVER'~executed~-
-false~22:35:28~'START SERVER'~executed~-
-false~22:59:19~'START SERVER'~executed~-
-false~00:01:40~'START SERVER'~executed~-
-false~00:29:32~'START SERVER'~executed~-
-false~00:50:02~'START SERVER'~executed~-
-false~01:22:42~'START SERVER'~executed~-
-false~01:23:25~'START SERVER'~executed~-
-false~01:26:50~'START SERVER'~executed~-
-false~01:29:23~'START SERVER'~executed~-
-false~01:33:19~'START SERVER'~executed~-
-false~01:39:36~'START SERVER'~executed~-
-false~01:39:57~'START SERVER'~executed~-
+false~14:54:05~START SERVER~executed~-
+false~14:54:05~~sucessful~31 ms
+false~14:54:23~create database test~Sucessful~410 ms
+false~14:54:47~set database test~Sucessful~313 ms
+false~14:54:59~CREATE TABLE test5 (A3 int NOT NULL, B3 varchar (255) NOT NULL, C3 varchar, PRIMARY KEY (A3))~Sucessful~271 ms
+false~14:55:59~INSERT INTO test5 (A3, B3, C3) VALUES (a, b, c)~Sucessful~197 ms
+false~14:56:33~SELECT * FROM test5~Sucessful~190 ms

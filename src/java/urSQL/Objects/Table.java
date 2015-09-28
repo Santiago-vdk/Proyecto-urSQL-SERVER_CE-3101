@@ -20,7 +20,7 @@ import urSQL.logica.logHandler;
 public class Table {
     private List<List> _Values= new ArrayList<List>();
     private List<String> _Columns=new ArrayList<String>();
-    private final String _Dir= "c:\\tmp/DataBases/";
+    private final String _Dir= logHandler.getInstance().getRootPath() + "/urSQL/DataBases/";   // "c:\\tmp/DataBases/"; PATH DAVID
     //private final String _DirSys= "c:\\tmp/DataBases/System_Catalog/";
     private String _PK="";
     private String _Schema;
@@ -47,7 +47,9 @@ public class Table {
      */
     public void charge_Table() throws Exception{
         _Values.removeAll(_Values);
-       
+        //System.out.println(_Dir+_Schema+"/"+_Table+".tree" + "   " + _Dir+_Schema+"/"+_Table+".table");
+        System.out.println("HERE " + _Dir+_Schema+"/"+_Table+".tree" + "   " + _Dir+_Schema+"/"+_Table+".table");
+        
         BplusTree A= hBplusTree.ReadOnly(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table");
        
@@ -79,6 +81,8 @@ public class Table {
         boolean tree= new File(_Dir+_Schema+"/"+_Table+".tree").delete();
         boolean table= new File(_Dir+_Schema+"/"+_Table+".table").delete();
        
+       // System.out.println(_Dir+_Schema+"/"+_Table+".tree" + "&& "+ _Dir+_Schema+"/"+_Table+".table");
+        
         BplusTree myTree = hBplusTree.Initialize(_Dir+_Schema+"/"+_Table+".tree",
                 _Dir+_Schema+"/"+_Table+".table",6);
         int Index_PK= get_Index(_PK);

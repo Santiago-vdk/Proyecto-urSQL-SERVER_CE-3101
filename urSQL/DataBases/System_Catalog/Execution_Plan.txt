@@ -1,1 +1,2 @@
-
+OPEN_TABLE~test5
+SELECT~ALL

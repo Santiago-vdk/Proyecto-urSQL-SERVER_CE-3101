@@ -71,7 +71,7 @@ public class logHandler {
         File fileDir = new File(_rootDir + "/urSQL/Log/log.txt");
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileDir, true)));
         String timeStamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
-        out.println(String.valueOf(pError) + "~" + timeStamp + "~" + "'" + pAction + "'" + "~" + pStatus + "~" + pDuration);
+        out.println(String.valueOf(pError) + "~" + timeStamp + "~" + "" + pAction + "" + "~" + pStatus + "~" + pDuration);
         out.close();
 
     }
@@ -144,23 +144,25 @@ public class logHandler {
          *log.txt
          */
 
-        String urSQLPath = pPath.replace("\\", "/") + "/urSQL";
-        _rootDir = pPath;
+        String urSQLPath = pPath.replace("\\", "/") ;
+        
+        _rootDir = urSQLPath + "/"; //C:/Users/Shagy/Documents/NetBeansProjects/urSQL/
+        System.out.println(_rootDir);
 
         //Check databases
-        File db_root_folder = new File(urSQLPath + "/DataBases");
+        File db_root_folder = new File(_rootDir + "/urSQL/DataBases");
         if (!db_root_folder.exists()) {
             db_root_folder.mkdirs();
         }
 
         //Check sys_catalog
-        File syscatalog_root_folder = new File(urSQLPath + "/DataBases/System_Catalog");
+        File syscatalog_root_folder = new File(_rootDir + "/urSQL/DataBases/System_Catalog");
         if (!syscatalog_root_folder.exists()) {
             syscatalog_root_folder.mkdirs();
         }
 
         //Check log
-        File log_root_folder = new File(urSQLPath + "/Log");
+        File log_root_folder = new File(_rootDir + "/urSQL/Log");
         if (!log_root_folder.exists()) {
             log_root_folder.mkdirs();
         }
@@ -168,51 +170,61 @@ public class logHandler {
         //Linea para online
         //String _Dir = logHandler.getInstance().getRootPath() + "/urSQL/";
         //Linea para offline
-        String _Dir = urSQLPath + "/"; //logHandler.getInstance().getRootPath() + "\\urSQL\\";
-
+        String _Dir = _rootDir + "urSQL/"; //logHandler.getInstance().getRootPath() + "\\urSQL\\";
+        try{
         if (!_treeFlag) {
             File Sys_Schemas_Tree_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree");
             File Sys_Schemas_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table");
 
             //Si el .tree no existe o el .table no existe
             if (!Sys_Schemas_Tree_File.exists() && !Sys_Schemas_Table_File.exists()) {
+                System.out.println("1");
+                
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6).Shutdown();
+                
             } //Si el .tree existe y el .table no existe
             else if (Sys_Schemas_Tree_File.exists() && !Sys_Schemas_Table_File.exists()) {
+                System.out.println("2");
                 //Borro el que si existe
                 Sys_Schemas_Tree_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6).Shutdown();
             } //Si el .tree no existe y el table existe
             else if (!Sys_Schemas_Tree_File.exists() && Sys_Schemas_Table_File.exists()) {
+                System.out.println("3");
                 //Borro el que si existe
                 Sys_Schemas_Table_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Schemas" + ".table", 6).Shutdown();
             } //Si los dos existen
             else {
             }
+            
 
             File Sys_Tables_Tree_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree");
             File Sys_Tables_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table");
             //Si el .tree no existe o el .table no existe
             if (!Sys_Tables_Tree_File.exists() && !Sys_Tables_Table_File.exists()) {
+                System.out.println("4");
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6).Shutdown();
+                System.out.println("4 asdf");
             } //Si el .tree existe y el .table no existe
             else if (Sys_Tables_Tree_File.exists() && !Sys_Tables_Table_File.exists()) {
+                System.out.println("5");
                 //Borro el que si existe
                 Sys_Tables_Tree_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6).Shutdown();
 
             } //Si el .tree no existe y el table existe
             else if (!Sys_Tables_Tree_File.exists() && Sys_Tables_Table_File.exists()) {
+                System.out.println("6");
                 //Borro el que si existe
                 Sys_Tables_Table_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Tables" + ".table", 6).Shutdown();
 
             } //Si los dos existen
             else {
@@ -222,21 +234,25 @@ public class logHandler {
             File Sys_Columns_Table_File = new File(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table");
             //Si el .tree no existe o el .table no existe
             if (!Sys_Columns_Tree_File.exists() && !Sys_Columns_Table_File.exists()) {
+                System.out.println("7");
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6).Shutdown();
+                System.out.println("asdf");
             } //Si el .tree existe y el .table no existe
             else if (Sys_Columns_Tree_File.exists() && !Sys_Columns_Table_File.exists()) {
+                System.out.println("8");
                 //Borro el que si existe
                 Sys_Columns_Tree_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6).Shutdown();
 
             } //Si el .tree no existe y el table existe
             else if (!Sys_Columns_Tree_File.exists() && Sys_Columns_Table_File.exists()) {
+                System.out.println("9");
                 //Borro el que si existe
                 Sys_Columns_Table_File.delete();
                 hBplusTree.Initialize(_Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".tree",
-                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6);
+                        _Dir + "DataBases/" + "System_Catalog/" + "Sys_Columns" + ".table", 6).Shutdown();
 
             } //Si los dos existen
             else {
@@ -256,6 +272,13 @@ public class logHandler {
         new File(_Dir + "DataBases" + "/" + "System_Catalog" + "/" + "Table.txt").createNewFile();
         new File(_Dir + "DataBases" + "/" + "System_Catalog" + "/" + "List.txt").createNewFile();
         new File(_Dir + "DataBases" + "/" + "System_Catalog" + "/" + "Execution_Plan.txt").createNewFile();
+        new File(_Dir + "Log" + "/" + "log.txt").createNewFile();
+        
+    
+        } catch (Exception e){
+            e.printStackTrace();
+            System.out.println("Culpa SANTI");
+        }
 
     }
 

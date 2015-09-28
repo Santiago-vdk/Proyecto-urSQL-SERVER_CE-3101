@@ -49,15 +49,15 @@ $(document).ready(function () {
 });
 
 function updateDataTable(data){
-    
-    if(data.table === "false"){
-        console.log("table has no data");
+
+    if(data.table === false){
+
     }
     else {
-        console.log("table has data");
-    }
+        
+    console.log(data.Valores);
     
-    /*
+    
     //dataTabla.destroy();
     arregloColumnas = [];
     aryJSONColTable = [];
@@ -92,19 +92,19 @@ function updateDataTable(data){
         
     });
   
-    
+  }
+  }
     
 
-
-    
+    /*
     dataTabla.row.add({//Quitar
         "col1": "1",
         "col2": "2",
         "col3": "3"
-    }).draw(false);
+    }).draw(false);*/
     
-    */
-}
+    
+
 
 function addRow(error, time, action, status, duration) {
     var pError;

@@ -20,7 +20,7 @@ import urSQL.Objects.Table;
  * @author David
  */
 public class Commands {
-    private final String _Dir= logHandler.getInstance().getRootPath()+"/urSQL/DataBases/";
+    private final String _Dir= "C:\\Users\\Shagy\\Documents\\NetBeansProjects\\urSQL\\urSQL\\DataBases\\";
     
     
     void create_System_Catalog() throws Exception{
@@ -110,7 +110,7 @@ public class Commands {
 	{
         
             Table a= new Table();
-            a.setTable("kkk", "Persons");
+            a.setTable("System_Catalog", "Sys_Schemas");
             a.charge_Table();
             List<String> n = new ArrayList<String>();
             n.add("a");

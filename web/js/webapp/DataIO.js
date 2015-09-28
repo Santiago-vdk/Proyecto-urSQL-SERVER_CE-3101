@@ -9,6 +9,8 @@ $(document).ready(function () {
             $('#execute-query-icon').removeClass("fa fa-check").addClass("fa fa-cog fa-spin");
             var code = getCode();
             sendQuery(code);
+            /*$('#execute-query').addClass("btn btn-sq-lg btn-success").removeClass("btn btn-sq-lg btn-warning");
+            $('#execute-query-icon').addClass("fa fa-check").removeClass("fa fa-cog fa-spin");*/
         }
 
 
@@ -66,7 +68,7 @@ function serverVerify() {
         url: 'webresources/webapp/initialSetup',
         type: 'get',
         contentType: 'application/json',
-        //async:false, FRAGIL
+        async:false,// FRAGIL
         success: function (data, textStatus, jQxhr) {
             console.log("urSQL Context Verified!");
         },

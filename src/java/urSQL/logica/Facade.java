@@ -8,6 +8,7 @@ package urSQL.logica;
 import java.util.concurrent.ExecutionException;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
+import urSQL.threads.Response;
 import urSQL.threads.ThreadManager;
 
 /**
@@ -39,28 +40,25 @@ public class Facade {
      * @throws java.lang.InterruptedException
      * @throws java.util.concurrent.ExecutionException
      */
-    public String processQuerry(String pQuery) throws InterruptedException, ExecutionException, Exception {
-
+    public void processQuerry(String pQuery) throws InterruptedException, ExecutionException, Exception {
         if (_On) {
-
             if (pQuery.toUpperCase().compareTo("STOP") == 0) {
                 _On = false;
                 Threads.stop(); //fragil
             } else {
-                return Threads.sendQuery(pQuery);
+                 Threads.sendQuery(pQuery);
             }
-
         } else if (pQuery.toUpperCase().compareTo("START") == 0) {
             this.Threads = new ThreadManager();
             _On = true;
 
         }
-        return "";
-
     }
 
     public String[] getList() {
         return ThreadManager.ListDB;
     }
-
+    public Response getResponse(){
+        return ThreadManager.getResponse();
+    }
 }

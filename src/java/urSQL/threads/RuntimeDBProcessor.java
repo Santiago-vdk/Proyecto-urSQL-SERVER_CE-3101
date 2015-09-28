@@ -32,9 +32,8 @@ public class RuntimeDBProcessor implements Callable {
    
     @Override
     public String call() throws Exception {
-        Response response = Parse(Query);
-        System.out.println(response.getState());
-        return response.getState();
+        boolean response = Parse(Query);
+        return String.valueOf(response);
     }
    
  
@@ -64,28 +63,27 @@ public class RuntimeDBProcessor implements Callable {
      
        
    
-    public Response Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException, Exception{
+    public boolean Parse(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException, Exception{
     try{
             net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse(pQuery);
             //net.sf.jsqlparser.statement.Statement parse = CCJSqlParserUtil.parse("select *");
             //System.out.println(parse.toString());
             ThreadManager._DATA.setConsulta(parse.toString());
             return createPlan(parse.toString());//crea el plan de ejecucion
+            
         }
         catch (JSQLParserException ex) {
             ThreadManager._DATA.setConsulta(elimSpaces(pQuery));
             if(SecondTry(pQuery)){
-                return createPlan(elimSpaces(pQuery));
+               return createPlan(elimSpaces(pQuery));
             }
             else{
                 String msj = ex.getCause().toString();
-                Response response = new Response();
-                response.setState("1064: You have an error in your SQL syntax");
                 ThreadManager._DATA.setState("unsucessful");
                 ThreadManager._DATA.setError("Error: 1064: You have an error in your SQL syntax" +msj.substring(30, msj.indexOf("Was expecting")));
                 ThreadManager._DATA.set_ErrorFlag(true);
                 //System.out.println(msj.substring(30, msj.indexOf("Was expecting")));
-                return response;
+                return false;
             }
            
             //ver si es un clp o alter
@@ -163,6 +161,7 @@ Message: You have an error in your SQL syntax; check the manual that corresponds
     private String _Plan="";
     private boolean IsUpdate=false;
     private boolean isDelete=false;
+    private String _ErrorMsj="";
    
     //funciones auxiliares
     //**************************************************************************
@@ -269,6 +268,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
             }
             else{
                 //error no existe tabla
+                _ErrorMsj+="Reason: Unknown table";
                 return false;
             }
            
@@ -302,6 +302,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
             }
             else{
                 //error no existe columna
+                _ErrorMsj+="Reason: Unknown column";
                 return false;
             }
         }
@@ -341,6 +342,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
                     }
                     else{
                         //error no existe columna
+                        _ErrorMsj+="Reason: Unknown column";
                         return false;
                     }
                 }
@@ -386,11 +388,24 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
    
     //CLP Commands
     //**************************************************************************
-    private boolean createPlan_Create_DB(){
+    private boolean createPlan_Create_DB() throws InterruptedException, ExecutionException, Exception{
         int indice = 2;
         String nombre = _Query[indice];
-        _Plan += "CREATE_DB~"+nombre;
-        return true;
+        
+        ThreadManager._SYCT = new SystemCatalog();
+        ThreadManager._SYCT.set_Plan(nombre, null, null, null, null, null, null, "V_S");
+        ThreadManager._Pool.execute(ThreadManager.futureSystem);
+        ThreadManager.waitSC();
+        String Resp= (String) ThreadManager.futureSystem.get();
+       
+        if(Resp.compareTo("true")!=0){
+            _Plan += "CREATE_DB~"+nombre;
+            return true;
+        }
+        else{
+            _ErrorMsj+="Reason: Database already exists";
+            return false;
+        }
     }
    
     private boolean createPlan_Drop_DB() throws InterruptedException, ExecutionException{
@@ -407,6 +422,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
             return true;
         }
         else{
+            _ErrorMsj+="Reason: Unknown Database";
             return false;
         }
     }
@@ -442,6 +458,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
         }
         else{
             //no existe esquema
+            _ErrorMsj+="Reason: Unknown Database";
             return false;
         }
     }
@@ -466,55 +483,68 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
         return true;
         }
         else{
+            _ErrorMsj+="Reason: Unknown Database";
             return false;
         }
     }
-    private boolean createPlan_Create_Table(){
+    private boolean createPlan_Create_Table() throws InterruptedException, ExecutionException{
         int indice = 2;
         String tabla = _Query[indice];
-        _Plan += "CREATE_TABLE~"+tabla+"\n";
+        
+        ThreadManager._SYCT.set_Plan(ThreadManager.Current_Schema, tabla, null, null, null, null, null, "V_T");
+        ThreadManager._Pool.execute(ThreadManager.futureSystem);
+        ThreadManager.waitSC();
+        String Resp= (String) ThreadManager.futureSystem.get();
        
-        indice=4;//se salta el parentesis
-        int estado =0;
-        String tipo="";
-        boolean fin=false;
-        while(!fin){
-            if(estado==0){//nombre columna
-                String columna = _Query[indice];
-                if(columna.toUpperCase().compareTo("PRIMARY")==0){//declaracion de primary key
-                    String pk = _Query[indice+3];//
-                    _Plan+="PRIMARY_KEY~"+tabla+"~"+pk+"\n";
-                    fin=true;
+        if(Resp.compareTo("true")!=0){
+        
+            _Plan += "CREATE_TABLE~"+tabla+"\n";
+
+            indice=4;//se salta el parentesis
+            int estado =0;
+            String tipo="";
+            boolean fin=false;
+            while(!fin){
+                if(estado==0){//nombre columna
+                    String columna = _Query[indice];
+                    if(columna.toUpperCase().compareTo("PRIMARY")==0){//declaracion de primary key
+                        String pk = _Query[indice+3];//
+                        _Plan+="PRIMARY_KEY~"+tabla+"~"+pk+"\n";
+                        fin=true;
+                    }
+                    else{
+                        _Plan+= "NEW_COLUMN~"+tabla+"~"+columna;
+                        estado=1;
+                        tipo="";
+                    }
                 }
-                else{
-                    _Plan+= "NEW_COLUMN~"+tabla+"~"+columna;
-                    estado=1;
-                    tipo="";
+                else if(estado==1){//obteniendo tipo
+                    String tmp = _Query[indice];
+                    if(tmp.compareTo(",")==0){//fin de declaracion
+                        _Plan+="~"+tipo+"~NULL\n";
+                        estado=0;
+                    }
+                    else if(tmp.toUpperCase().compareTo("NOT")==0){
+                        _Plan+="~"+tipo+"~NOT_NULL\n";
+                        estado=0;
+                        indice+=2;
+                    }
+                    else if(tmp.toUpperCase().compareTo("NULL")==0){
+                        _Plan+="~"+tipo+"~NULL\n";
+                        estado=0;
+                        indice++;
+                    }
+                    tipo+=tmp;
                 }
+                indice++;
+
             }
-            else if(estado==1){//obteniendo tipo
-                String tmp = _Query[indice];
-                if(tmp.compareTo(",")==0){//fin de declaracion
-                    _Plan+="~"+tipo+"~NULL\n";
-                    estado=0;
-                }
-                else if(tmp.toUpperCase().compareTo("NOT")==0){
-                    _Plan+="~"+tipo+"~NOT_NULL\n";
-                    estado=0;
-                    indice+=2;
-                }
-                else if(tmp.toUpperCase().compareTo("NULL")==0){
-                    _Plan+="~"+tipo+"~NULL\n";
-                    estado=0;
-                    indice++;
-                }
-                tipo+=tmp;
-            }
-            indice++;
-           
+            return true; 
         }
-        return true; //tabla duplicada?
-       
+        else{
+            _ErrorMsj+="Reason: Table already exist";
+            return false;
+        }
        
        
        
@@ -539,6 +569,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
         }
         else{
             //error no existe tabla
+            _ErrorMsj+="Reason: Unknown table";
             return false;
         }
     }
@@ -559,6 +590,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
         }
         else{
             //error no existe tabla
+            _ErrorMsj+="Reason: Unknown table";
             return false;
         }
     }
@@ -581,6 +613,7 @@ private boolean checkJoinStatement(int pi,int pj) throws InterruptedException, E
             }
             else{
                 //no existe tabla
+                _ErrorMsj+="Reason: Unknown table";
                 return false;
             }
     }
@@ -628,6 +661,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
                 _Plan += "OPEN_TABLE~"+tabla+"\n";
             }
             else{
+                _ErrorMsj+="Reason: Unknown table";
                 return false;
             }
         }
@@ -673,6 +707,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
                         indiceGroup+=2;//se salta la coma
                 }
                 else{
+                    _ErrorMsj+="Reason: Unknown column";
                     return false;
                 }
            
@@ -725,6 +760,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
             }
        
             else{
+                _ErrorMsj+="Reason: Unknown column";
                 return false;
             }
            
@@ -773,6 +809,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         }
         else{
             //error no existe la tabla
+            _ErrorMsj+="Reason: Unknown table";
             return false;
         }
     }  
@@ -809,6 +846,7 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         }
         else{
             //no existe la tabla
+            _ErrorMsj+="Reason: Unknown table";
             return false;
         }
     }  
@@ -838,13 +876,13 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
  
             }
             else{
-                System.out.println("error cant de columnas != cant de valores");
+                _ErrorMsj+="Reason: Unmatching sizes columns and values";
                 return false;
             }
         }
         else{
+            _ErrorMsj+="Reason: Unknown table";
             return false;
-            //tabla no existe
         }
     }
     //**************************************************************************
@@ -858,9 +896,11 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
      * @param pQuery
      * @throws java.lang.InterruptedException
      * @throws java.util.concurrent.ExecutionException
+     * @throws java.io.IOException
+     * @throws org.json.JSONException
      */
        
-    public Response createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException, Exception{
+    public boolean createPlan(String pQuery) throws InterruptedException, ExecutionException, IOException, JSONException, Exception{
         String tmp = adjustQuery(pQuery);
         System.out.println(tmp);
         _Query = tmp.split(" ");
@@ -927,19 +967,16 @@ private boolean createPlan_Select() throws InterruptedException, ExecutionExcept
         if(valido){
            
             logHandler.getInstance().logExecution_Plan(_Plan);
-            Response response = new Response();
+            return true;
              //guardar la variable _Plan en un archivo
-            return response;
         }
-        else{
-            Response response = new Response();
-            response.setState("42601    A character, token, or clause is invalid or missing.");
+        if(!valido){
             ThreadManager._DATA.setState("unsucessful");
-            ThreadManager._DATA.setError("Error:42601. A character, token, or clause is invalid or missing.");
+            ThreadManager._DATA.setError("Error:42601. A character, token, or clause is invalid or missing.\n"+_ErrorMsj);
             ThreadManager._DATA.set_ErrorFlag(true);
-            return response;
+            return false;
         }
-       
+       return false;
    
     }
    

@@ -265,7 +265,7 @@ function showStatus(data) {
     var message = '<html><h2 align-text="center">urSQL - System Status</h2>';
     message = message + '<hr>';
 
-    if (data.server_status === "true") {
+    if (data.server_status === true) {
         message = message + '<h3>Server Status, ' + "Ready!" + '</h3>';
         message = message + '<ul><li>RunTime DB Processor, ' + "running..." + '</li>';
         message = message + '<li>System Catalog, ' + "running..." + '</li>';

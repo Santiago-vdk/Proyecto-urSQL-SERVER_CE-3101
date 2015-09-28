@@ -15,7 +15,7 @@ import urSQL.Objects.Table;
  */
 public class Response {
    
-    private String _State= "";
+    private String _State= "sucessful";
     private JSONArray _Tabla=null;
     private JSONArray Columnas= null;
     private String Consulta = "";
@@ -92,10 +92,10 @@ public class Response {
         Error_Flag = pFlag;
     }
    
-    public boolean get_TableFlag(boolean pFlag){
+    public boolean get_TableFlag(){
         return Tabla_Flag;
     }
-    public boolean get_ErrorFlag(boolean pFlag){
+    public boolean get_ErrorFlag(){
         return Error_Flag;
     }
    

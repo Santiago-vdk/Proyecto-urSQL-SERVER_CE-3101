@@ -5,6 +5,7 @@
  */
 package urSQL.threads;
  
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -18,7 +19,7 @@ import urSQL.logica.logHandler;
  */
 public class SystemCatalog implements Callable{
    
-    private final String _Dir="c:\\tmp/DataBases/System_Catalog/";
+    private final String _Dir=  logHandler.getInstance().getRootPath() + "/urSQL/DataBases/"; //"c:\\tmp/DataBases/System_Catalog/";
     private final String _TSchema= "Sys_Schemas";
     private final String _TTable= "Sys_Tables";
     private final String _TColumn= "Sys_Columns";
